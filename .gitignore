@@ -4,3 +4,4 @@ temp.py
 brian_jupyter_lab/.env
 brian_jupyter/lang_chain/.env
 brian_python/write_bolg/.env
+brian_jupyter/__pycache__/temp.cpython-311.pyc
