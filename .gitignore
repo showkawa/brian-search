@@ -1,9 +1,8 @@
-brian_python/auto_demo/.env
-brian_jupyter/.env
-temp.py
-brian_jupyter_lab/.env
-brian_jupyter/lang_chain/.env
 brian_jupyter/lang_chain/~/*
-brian_python/write_bolg/.env
-brian_jupyter/__pycache__/temp.cpython-311.pyc
+brian_jupyter/lang_chain/03_requirements.txt
+brian_jupyter/__pycache__/*
 brian_jupyter/llms_full_stack/*
+litellm_uuid.txt
+temp.py
+.venv/*
+.env
