@@ -10,7 +10,9 @@
 
 
 #### 3.brian_jupyter
-
+##### 3.1 learn_github
+###### 3.1.1  open-interpreter.ipynb
+    LangChain + Deep Lake + ChatGPT-3.5 learning the open source `open-interpreter`
 
 #### 4.brian_python
 
