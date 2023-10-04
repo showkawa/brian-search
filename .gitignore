@@ -2,6 +2,7 @@ brian_jupyter/lang_chain/~/*
 brian_jupyter/lang_chain/03_requirements.txt
 brian_jupyter/__pycache__/*
 brian_jupyter/llms_full_stack/*
+brian_python/__pycache__/*
 litellm_uuid.txt
 temp.py
 .venv/*

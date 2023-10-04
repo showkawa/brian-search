@@ -15,4 +15,6 @@
     LangChain + Deep Lake + ChatGPT-3.5 learning the open source `open-interpreter`
 
 #### 4.brian_python
+##### 4.1 generate the project structure diagram
+    generate_psd.py
 
