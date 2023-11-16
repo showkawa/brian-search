@@ -1,0 +1,9 @@
+ctparse==0.3.6
+langchain==0.0.292
+py_expression_eval==0.3.14
+pydantic==1.10.12
+python-dotenv==1.0.0
+chromadb==0.4.5
+python-docx==0.8.11
+pypdf==3.16.2
+colorama==0.4.6
