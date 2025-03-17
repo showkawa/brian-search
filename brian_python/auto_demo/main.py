@@ -1,6 +1,6 @@
 from utils.prompt_template_builder import PromptTemplateBuilder
 from langchain.output_parsers import PydanticOutputParser
-from auto_agents.action import Action
+from auto_agent.action import Action
 import sys,os
 
 if __name__ == "__main__":
