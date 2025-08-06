@@ -8,6 +8,8 @@
 
 #### 2.brian_js
 
+##### 2.1 bilibili_summary
+[bilibili_summary](brian_js/bilibili_summary/README.md)
 
 #### 3.brian_jupyter
 ##### 3.1 learn_github

@@ -1,0 +1,19 @@
+{
+  "name": "bilibili-summary",
+  "version": "1.0.0",
+  "description": "Extract and summarize content from Bilibili videos using DeepSeek AI",
+  "main": "index.js",
+  "scripts": {
+    "fetch": "node fetch_content.js",
+    "summarize": "node summarize_content.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1",
+    "openai": "^4.0.0"
+  }
+} 

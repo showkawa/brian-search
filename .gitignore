@@ -1,8 +1,9 @@
 brian_jupyter/lang_chain/~/*
 brian_jupyter/lang_chain/03_requirements.txt
-brian_jupyter/__pycache__/*
+**/__pycache__/*
 brian_jupyter/llms_full_stack/*
-brian_python/__pycache__/*
+brian_js/**/output/*
+brian_js/**/node_modules/*
 litellm_uuid.txt
 temp.py
 .venv/*
