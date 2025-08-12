@@ -5,8 +5,8 @@
   "main": "out/main/index.js",
   "private": true,
   "scripts": {
-    "dev": "pnpm run build && \"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\" . --disable-gpu-sandbox",
-    "dev:watch": "concurrently \"vite build --watch\" \"wait-on out/renderer/index.html && \\\"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\\\" . --disable-gpu-sandbox\"",
+    "dev": "pnpm run build && \"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\" . --disable-gpu-sandbox --disable-logging --log-level=3 --disable-dev-shm-usage --no-sandbox",
+    "dev:watch": "concurrently \"vite build --watch\" \"wait-on out/renderer/index.html && \\\"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\\\" . --disable-gpu-sandbox --disable-logging --log-level=3 --disable-dev-shm-usage --no-sandbox\"",
     "dev:renderer": "vite",
     "build": "tsc && electron-vite build",
     "preview": "electron-vite preview",

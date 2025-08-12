@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, BrowserView, ipcMain } from 'electron'
 import { join } from 'path'
+import { networkMonitor, setupTeamsNetworkMonitoring } from './networkMonitor'
 
 class App {
   private mainWindow: BrowserWindow | null = null
@@ -79,6 +80,23 @@ class App {
     ipcMain.handle('app:get-version', () => {
       return app.getVersion()
     })
+
+    // Network monitoring IPC handlers
+    ipcMain.handle('network:get-stats', () => {
+      return networkMonitor.getStats()
+    })
+
+    ipcMain.handle('network:get-requests', (event, filter) => {
+      return networkMonitor.exportRequests(filter)
+    })
+
+    ipcMain.handle('network:search-requests', (event, pattern) => {
+      return networkMonitor.searchRequests(pattern)
+    })
+
+    ipcMain.handle('network:get-requests-by-type', (event, type) => {
+      return networkMonitor.getRequestsByType(type)
+    })
   }
 
   private createWindow(): void {
@@ -122,7 +140,7 @@ class App {
       webPreferences: {
         contextIsolation: false,
         nodeIntegration: false, // Disable for security and Teams compatibility
-        webSecurity: false, // Allow cross-origin requests
+        webSecurity: false, // Allow cross-origin requests for Teams
         allowRunningInsecureContent: true,
         experimentalFeatures: true,
         backgroundThrottling: false,
@@ -156,9 +174,20 @@ class App {
         'camera',
         'midi',
         'background-sync',
-        'push-messaging'
+        'push-messaging',
+        'clipboard-read',
+        'clipboard-write'
       ]
-      callback(allowedPermissions.includes(permission))
+      
+      console.log(`🔐 Permission requested: ${permission}`)
+      
+      if (allowedPermissions.includes(permission)) {
+        console.log(`✅ Permission granted: ${permission}`)
+        callback(true)
+      } else {
+        console.log(`❌ Permission denied: ${permission}`)
+        callback(false)
+      }
     })
 
     // Set a more standard user agent for better authentication compatibility
@@ -176,6 +205,31 @@ class App {
       if (details.url.includes('login.microsoftonline.com') || details.url.includes('oauth2')) {
         details.requestHeaders['Referer'] = 'https://teams.microsoft.com/'
         details.requestHeaders['Origin'] = 'https://teams.microsoft.com'
+        
+        // Add specific headers for OAuth2 token requests
+        if (details.url.includes('/oauth2/v2.0/token')) {
+          details.requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
+          details.requestHeaders['Accept'] = 'application/json'
+          details.requestHeaders['X-Requested-With'] = 'XMLHttpRequest'
+          
+          // Add client information for Copilot authentication
+          if (details.url.includes('client-request-id')) {
+            details.requestHeaders['X-Client-Name'] = 'TeamsElectronWrapper'
+            details.requestHeaders['X-Client-Version'] = '1.0.0'
+          }
+        }
+      }
+      
+      // Handle Teams Signals API to prevent conflicts
+      if (details.url.includes('sigsapi') && details.url.includes('/Signals')) {
+        // Add unique session identifier to prevent conflicts
+        details.requestHeaders['X-Electron-Session'] = 'electron-teams-wrapper'
+        details.requestHeaders['X-Client-Type'] = 'electron'
+        
+        // Ensure proper content type for signals API
+        if (details.method === 'POST' && !details.requestHeaders['Content-Type']) {
+          details.requestHeaders['Content-Type'] = 'application/json'
+        }
       }
       
       callback({ requestHeaders: details.requestHeaders })
@@ -197,6 +251,10 @@ class App {
 
     // Set up Teams window handler after view is created
     this.setupTeamsWindowHandler()
+
+    // 启动网络监控
+    setupTeamsNetworkMonitoring()
+    console.log('Network monitoring initialized for Teams')
 
     // Load URLs
     this.teamsView.webContents.loadURL('https://teams.microsoft.com/v2/', {
@@ -284,12 +342,54 @@ class App {
                 message.includes('Window ID is invalid') ||
                 message.includes('Could not get loading window') ||
                 message.includes('400 (Bad Request)') ||
-                message.includes('oauth2/v2.0/token')) {
+                message.includes('oauth2/v2.0/token') ||
+                message.includes('Permissions policy violation') ||
+                message.includes('Geolocation access has been blocked')) {
               console.warn('Teams compatibility warning (suppressed):', message);
               return;
             }
             originalError.apply(console, args);
           };
+          
+          // Handle geolocation permissions policy
+          if (navigator.permissions) {
+            // Override permissions query for geolocation
+            const originalQuery = navigator.permissions.query;
+            navigator.permissions.query = function(permissionDesc) {
+              if (permissionDesc.name === 'geolocation') {
+                return Promise.resolve({ state: 'granted' });
+              }
+              return originalQuery.call(this, permissionDesc);
+            };
+          }
+          
+          // Provide geolocation mock if needed
+          if (!navigator.geolocation) {
+            navigator.geolocation = {
+              getCurrentPosition: function(success, error, options) {
+                console.log('🌍 Geolocation requested - providing default location');
+                // Provide a default location (Microsoft headquarters as fallback)
+                success({
+                  coords: {
+                    latitude: 47.6062,
+                    longitude: -122.3321,
+                    accuracy: 100,
+                    altitude: null,
+                    altitudeAccuracy: null,
+                    heading: null,
+                    speed: null
+                  },
+                  timestamp: Date.now()
+                });
+              },
+              watchPosition: function(success, error, options) {
+                return this.getCurrentPosition(success, error, options);
+              },
+              clearWatch: function(id) {
+                // No-op
+              }
+            };
+          }
           
           // Add authentication compatibility helpers
           if (!window.msTeamsAuthHelper) {
@@ -305,6 +405,79 @@ class App {
               }
             };
           }
+          
+          // Handle Teams Signals API conflicts and OAuth2 authentication
+          const originalFetch = window.fetch;
+          window.fetch = function(input, init) {
+            const url = typeof input === 'string' ? input : input.url;
+            
+            // Handle OAuth2 token requests for Copilot and other features
+            if (url.includes('oauth2/v2.0/token')) {
+              console.log('🔐 Intercepting OAuth2 token request:', url);
+              
+              // Ensure proper headers for OAuth2 requests
+              const headers = {
+                ...((init && init.headers) || {}),
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Referer': 'https://teams.microsoft.com/',
+                'Origin': 'https://teams.microsoft.com'
+              };
+              
+              const modifiedInit = {
+                ...init,
+                headers,
+                credentials: 'include' // Ensure cookies are included
+              };
+              
+              return originalFetch.call(this, input, modifiedInit).catch(error => {
+                console.warn('OAuth2 request failed, retrying with enhanced headers:', error);
+                
+                // Retry with additional headers if first attempt fails
+                const retryHeaders = {
+                  ...headers,
+                  'X-Client-Name': 'TeamsElectronWrapper',
+                  'X-Client-Version': '1.0.0',
+                  'User-Agent': navigator.userAgent
+                };
+                
+                const retryInit = {
+                  ...modifiedInit,
+                  headers: retryHeaders
+                };
+                
+                return originalFetch.call(this, input, retryInit);
+              });
+            }
+            
+            // Handle Signals API requests to prevent 409 conflicts
+            if (url.includes('sigsapi') && url.includes('/Signals')) {
+              console.log('🔄 Intercepting Signals API request:', url);
+              
+              // Add delay to prevent rapid successive requests
+              return new Promise((resolve) => {
+                setTimeout(() => {
+                  // Add unique headers to identify Electron client
+                  const headers = {
+                    ...((init && init.headers) || {}),
+                    'X-Electron-Session': 'electron-teams-wrapper',
+                    'X-Client-Type': 'electron',
+                    'X-Request-ID': Date.now().toString()
+                  };
+                  
+                  const modifiedInit = {
+                    ...init,
+                    headers
+                  };
+                  
+                  resolve(originalFetch.call(this, input, modifiedInit));
+                }, Math.random() * 1000 + 500); // 500-1500ms random delay
+              });
+            }
+            
+            return originalFetch.call(this, input, init);
+          };
           
           console.log('Teams Electron compatibility initialized successfully');
         `).catch(err => {
