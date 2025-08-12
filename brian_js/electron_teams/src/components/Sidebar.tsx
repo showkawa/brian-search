@@ -31,28 +31,24 @@ export function Sidebar() {
   const menuItems = [
     {
       title: 'Reload Teams',
-      description: 'Refresh the Teams interface',
       icon: RefreshCw,
       action: handleReloadTeams,
       variant: 'default' as const
     },
     {
       title: 'Developer Tools',
-      description: 'Toggle Teams DevTools',
       icon: Wrench,
       action: handleToggleDevTools,
       variant: 'outline' as const
     },
     {
       title: 'Clear Cache',
-      description: 'Clear Teams cache and reload',
       icon: Trash2,
       action: handleClearCache,
       variant: 'destructive' as const
     },
     {
       title: 'App Info',
-      description: 'Show application information',
       icon: Info,
       action: handleGetVersion,
       variant: 'ghost' as const
@@ -67,9 +63,6 @@ export function Sidebar() {
           <Settings className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Teams Control</h1>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your Teams experience
-        </p>
       </div>
 
       {/* Menu Items */}
@@ -80,15 +73,12 @@ export function Sidebar() {
             <div key={index} className="space-y-2">
               <Button
                 variant={item.variant}
-                className="w-full justify-start text-left h-auto p-3"
+                className="w-full justify-start text-left p-3"
                 onClick={item.action}
               >
-                <div className="flex items-start space-x-3">
-                  <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 space-y-1">
-                    <div className="font-medium">{item.title}</div>
-                    <div className="text-xs opacity-80">{item.description}</div>
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <div className="font-medium">{item.title}</div>
                 </div>
               </Button>
             </div>
