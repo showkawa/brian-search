@@ -1,0 +1,110 @@
+{
+  "name": "electron-teams",
+  "version": "1.0.0",
+  "description": "Electron wrapper for Microsoft Teams with custom sidebar",
+  "main": "out/main/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm run build && \"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\" . --disable-gpu-sandbox",
+    "dev:watch": "concurrently \"vite build --watch\" \"wait-on out/renderer/index.html && \\\"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\\\" . --disable-gpu-sandbox\"",
+    "dev:renderer": "vite",
+    "build": "tsc && electron-vite build",
+    "preview": "electron-vite preview",
+    "pack": "electron-builder",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
+  },
+  "dependencies": {
+    "@udecode/zustood": "^2.0.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.11",
+    "ky": "^1.3.0",
+    "lucide-react": "^0.445.0",
+    "react-router": "^6.23.1",
+    "react-router-dom": "^6.23.1",
+    "swr": "^2.2.5",
+    "use-debounce": "^10.0.1",
+    "usehooks-ts": "^3.1.0",
+    "uuid": "^10.0.0",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.0.1",
+    "cross-env": "^10.0.0",
+    "electron": "28.0.0",
+    "electron-builder": "25.0.0",
+    "electron-vite": "^2.3.0",
+    "eslint": "^9.12.0",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.3",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.19",
+    "vite-plugin-electron": "^0.28.7",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-pages": "^0.32.2",
+    "vitest": "^2.0.5",
+    "wait-on": "^8.0.4"
+  },
+  "build": {
+    "appId": "com.electron.teams",
+    "productName": "Electron Teams",
+    "directories": {
+      "output": "release/${version}"
+    },
+    "files": [
+      "dist-electron",
+      "dist"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

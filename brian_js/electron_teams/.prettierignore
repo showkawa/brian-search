@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-electron
+out
+*.log
+.DS_Store
+coverage
+.nyc_output
+.vscode/settings.json

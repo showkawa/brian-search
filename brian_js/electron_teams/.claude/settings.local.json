@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm run:*)",
+      "Bash(timeout 10s pnpm run dev)",
+      "Bash(pnpm add:*)",
+      "Bash(timeout 15s pnpm run dev)",
+      "Bash(where electron)",
+      "Bash(./node_modules/.bin/electron:*)",
+      "Bash(pnpm config set:*)",
+      "Bash(pnpm config get:*)",
+      "Bash(set ELECTRON_SKIP_BINARY_DOWNLOAD=)",
+      "Bash(npm install:*)",
+      "Bash(timeout 10s pnpm run dev:renderer)",
+      "Bash(\"C:\\Users\\hh\\Desktop\\brian\\tool\\electron-v28.0.0-win32-x64\\electron.exe\" --version)",
+      "Bash(timeout:*)"
+    ],
+    "deny": []
+  }
+}
