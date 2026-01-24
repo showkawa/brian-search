@@ -10,3 +10,4 @@ temp.py
 .env
 brian_js/electron_teams/nul
 brian_js/**/out/*
+.windsurf/*
