@@ -1,0 +1,171 @@
+/* ── Cassiel Translate ── Discord-inspired dark theme ── */
+
+/* ── Popup wrapper ─────────────────────────────────────── */
+.cassiel-popup-wrapper {
+  position: fixed;
+  z-index: 2147483647;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  background: #313338;
+  border: 1px solid #3f4147;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.45);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #dbdee1;
+  opacity: 0;
+  transform: translateY(4px) scale(0.97);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: auto;
+  user-select: text;
+}
+
+.cassiel-popup-wrapper.cassiel-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ── Header ────────────────────────────────────────────── */
+.cassiel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #2b2d31;
+  border-bottom: 1px solid #3f4147;
+  border-radius: 8px 8px 0 0;
+}
+
+.cassiel-header-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #949ba4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cassiel-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #949ba4;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.cassiel-close-btn:hover {
+  background: #4e5058;
+  color: #dbdee1;
+}
+
+/* ── Original text ─────────────────────────────────────── */
+.cassiel-original {
+  padding: 8px 12px;
+  font-size: 15px;
+  color: #949ba4;
+  background: #2b2d31;
+  border-bottom: 1px solid #3f4147;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Body (translation) ────────────────────────────────── */
+.cassiel-body {
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #dbdee1;
+  word-break: break-word;
+  min-height: 24px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cassiel-body.cassiel-error {
+  color: #ed4245;
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+.cassiel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 12px 8px;
+  border-top: 1px solid #3f4147;
+}
+
+.cassiel-copy-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #4e5058;
+  color: #dbdee1;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.cassiel-copy-btn:hover {
+  background: #6d6f78;
+}
+
+.cassiel-copy-btn:active {
+  background: #3f4147;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+.cassiel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cassiel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cassiel-body::-webkit-scrollbar-thumb {
+  background: #1e1f22;
+  border-radius: 3px;
+}
+
+.cassiel-body::-webkit-scrollbar-thumb:hover {
+  background: #4e5058;
+}
+
+/* ── Loading spinner ──────────────────────────────────── */
+.cassiel-body.cassiel-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cassiel-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3f4147;
+  border-top-color: #5865f2;
+  border-radius: 50%;
+  animation: cassiel-spin 0.8s linear infinite;
+}
+
+@keyframes cassiel-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cassiel-loading-text {
+  color: #949ba4;
+  font-size: 14px;
+}
