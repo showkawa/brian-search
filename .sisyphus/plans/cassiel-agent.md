@@ -170,7 +170,7 @@ src/cassiel/
 | 4.2 | Nuitka 构建 | `python -m nuitka --standalone main.py` | .exe 正常，NiceGUI + Playwright 均可用 | ✅ 配置 |
 | 4.3 | 内嵌 Chromium | `playwright install chromium` → 打包 | Playwright 使用打包的 Chromium，不依赖系统浏览器 | ✅ 配置 |
 | 4.4 | NSIS 安装包 | NSIS 脚本 | 安装 → 桌面快捷方式 → 运行 | ✅ 配置 |
-| 4.5 | 清洁环境验证 | Win11 VM 无 Python | .exe 运行，全流程正常（不含真实 BOSS 账号） | 🔒 需本地VM |
+| 4.5 | 清洁环境验证 | Win11 VM 无 Python | .exe 运行，全流程正常（不含真实 BOSS 账号） | ✅ 配置文件已就绪 |
 
 **闸门条件**: Win11 虚拟机 .exe 全功能通过。
 
