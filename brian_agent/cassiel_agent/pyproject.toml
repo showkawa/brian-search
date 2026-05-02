@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cassiel-agent"
+version = "0.1.0"
+description = "BOSS直聘智能招聘助手 — 搜索、筛选、邀约一体化Agent流水线"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Brian"},
+]
+
+dependencies = [
+    "pydantic>=2.0",
+    "nicegui>=1.4",
+    "playwright>=1.40",
+    "openai>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[project.scripts]
+cassiel-agent = "cassiel.ui.main:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
