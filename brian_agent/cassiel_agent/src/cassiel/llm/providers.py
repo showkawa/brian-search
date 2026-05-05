@@ -139,6 +139,15 @@ class LLMProvider(ABC):
             logger.warning("JSON解析失败，原始响应: %s", raw[:200])
             return {"raw_response": raw}
 
+    def list_models(self) -> list[str]:
+        """获取提供商可用模型列表
+
+        Returns:
+            模型 ID 列表，如 ["deepseek-chat", "deepseek-coder"]
+        """
+        resp = self.client.models.list()
+        return [m.id for m in resp.data]
+
 
 # ── 具体提供商 ──────────────────────────────────────────────
 
