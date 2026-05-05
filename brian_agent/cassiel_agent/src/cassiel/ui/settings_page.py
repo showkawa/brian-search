@@ -8,7 +8,6 @@ from nicegui import ui
 
 from cassiel.config.settings import AppConfig, SearchConfig, CredentialEntry
 from cassiel.llm.providers import create_provider
-from cassiel.ui.model_options import provider_name
 
 # 下拉选项常量 (与 search_form.py 保持一致)
 _EXPERIENCE_OPTIONS = ["不限", "1-3年", "3-5年", "5-10年", "10年以上"]
