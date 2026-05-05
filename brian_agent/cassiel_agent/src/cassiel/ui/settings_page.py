@@ -102,17 +102,10 @@ class SettingsPage:
                 # 默认模型下拉
                 with ui.row().classes("w-full items-center gap-4 q-mb-sm"):
                     ui.label("").classes("w-24")
-                    enabled_models = self.config.enabled_models.get(provider_id, [])
-                    current_model_name = (
-                        self.config.model.search_model if provider_id == "glm" else
-                        self.config.model.evaluate_model if provider_id == "deepseek" else
-                        self.config.model.write_model
-                    )
-                    current_value = current_model_name if current_model_name in enabled_models else (enabled_models[0] if enabled_models else "")
                     model_select = ui.select(
                         label="默认模型",
                         options=[],
-                        value=current_value,
+                        value=None,
                         on_change=lambda e, pid=provider_id: self._on_model_select_change(pid),
                     ).classes("w-56").props("outlined dense")
                     self._model_selects[provider_id] = model_select
@@ -172,7 +165,7 @@ class SettingsPage:
             hint.set_text("")
             model_status.set_text("")
             model_select.options = []
-            model_select.value = ""
+            model_select.value = None
             model_select.disable()
             container.set_visibility(False)
             return
@@ -183,7 +176,7 @@ class SettingsPage:
             hint.classes("text-orange-6")
             model_status.set_text("")
             model_select.options = []
-            model_select.value = ""
+            model_select.value = None
             model_select.disable()
             container.set_visibility(False)
             self._clear_checkboxes(provider_id)
@@ -197,7 +190,7 @@ class SettingsPage:
             hint.classes("text-orange-6")
             model_status.set_text("")
             model_select.options = []
-            model_select.value = ""
+            model_select.value = None
             model_select.disable()
             container.set_visibility(False)
             return
@@ -270,7 +263,7 @@ class SettingsPage:
         model_select = self._model_selects[provider_id]
         model_select.options = enabled
         if model_select.value not in enabled:
-            model_select.value = enabled[0] if enabled else ""
+            model_select.value = enabled[0] if enabled else None
 
     def _test_connection(self, provider_id: str) -> None:
         """测试连接并拉取可用模型列表"""
