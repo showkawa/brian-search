@@ -376,20 +376,14 @@ class RecruitPage:
             backoff_base = 5.0  # 指数退避基数 (秒)
 
             try:
-                loop = asyncio.get_running_loop()
-
-                def _do_search() -> CandidateList:
-                    collector = BossCollector(
-                        headless=False,
-                        on_log=lambda msg: search_log.push(msg),
-                    )
-                    try:
-                        result = collector.search(config=config)
-                        return result
-                    finally:
-                        collector.close()
-
-                candidates = await loop.run_in_executor(None, _do_search)
+                collector = BossCollector(
+                    headless=False,
+                    on_log=lambda msg: search_log.push(msg),
+                )
+                try:
+                    candidates = await collector.search(config=config)
+                finally:
+                    await collector.close()
 
                 progress.value = 1.0
                 self._candidates = candidates

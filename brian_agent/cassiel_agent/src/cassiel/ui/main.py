@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 from typing import Any
 
@@ -19,21 +20,12 @@ from cassiel.ui.settings_page import SettingsPage
 
 
 class AppShell:
-    """Cassiel Agent 应用外壳
-
-    管理侧边栏导航和页面切换。
-
-    Usage:
-        shell = AppShell()
-        shell.run()
-    """
 
     def __init__(self, config: AppConfig | None = None) -> None:
         self.config = config or self._load_config()
         self._sidebar: Sidebar | None = None
 
     def _load_config(self) -> AppConfig:
-        """加载配置"""
         try:
             cfg = AppConfig.from_json()
             if not cfg.api_keys.glm_key:
@@ -47,16 +39,12 @@ class AppShell:
             return AppConfig()
 
     def _build_ui(self) -> None:
-        """构建应用 UI: 侧边栏 + 页面容器"""
-        # ── 侧边栏 ──
         with ui.left_drawer(bordered=True, fixed=True).classes("w-[160px] q-pa-none") as drawer:
             self._sidebar = Sidebar(on_navigate=self._navigate)
             self._sidebar.build()
 
-        # ── 页面内容区 ──
         with ui.column().classes("w-full q-pa-md"):
-            # 使用 tab_panels 实现页面切换
-            self._tabs = ui.tabs().classes("hidden")  # 隐藏的 tab 栏，仅做路由
+            self._tabs = ui.tabs().classes("hidden")
             with ui.tab_panels(self._tabs, value="recruit").classes("w-full") as self._panels:
                 with ui.tab_panel("recruit"):
                     self._recruit_page = RecruitPage(self.config)
@@ -65,12 +53,38 @@ class AppShell:
                     self._settings_page = SettingsPage(self.config)
                     self._settings_page.build()
 
+        self._schedule_startup_check()
+
+    def _schedule_startup_check(self) -> None:
+        """启动后 2 秒在后台验证 BOSS Cookie"""
+
+        async def _check() -> None:
+            await asyncio.sleep(2)
+            try:
+                from cassiel.collector.boss import BossCollector, COOKIES_FILE
+                if not COOKIES_FILE.exists():
+                    return
+
+                collector = BossCollector(headless=True)
+                try:
+                    is_valid = await collector.verify_cookies()
+                    if is_valid:
+                        self._settings_page._update_boss_status()
+                    else:
+                        self._settings_page._boss_status.text = "⚠ 已过期"
+                        self._settings_page._boss_status.classes("text-orange", remove="text-positive text-grey-5 text-negative")
+                        self.config.credentials.boss_zhipin.status = "expired"
+                finally:
+                    await collector.close()
+            except Exception:
+                pass
+
+        ui.timer(0.1, _check, once=True)
+
     def _navigate(self, page_id: str) -> None:
-        """侧边栏菜单点击 → 切换页面"""
         self._panels.set_value(page_id)
 
     def run(self, **kwargs: Any) -> None:
-        """启动 NiceGUI 应用"""
         self._build_ui()
         ui.run(
             native=True,
@@ -81,5 +95,4 @@ class AppShell:
 
 
 def run(**kwargs: Any) -> None:
-    """Module-level entry point for `cassiel-agent` console script."""
     AppShell().run(**kwargs)

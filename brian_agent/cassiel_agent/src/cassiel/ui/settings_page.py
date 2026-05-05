@@ -346,33 +346,24 @@ class SettingsPage:
             self._boss_status.classes("text-orange", remove="text-positive text-grey-5 text-negative")
             self.config.credentials.boss_zhipin.status = "unset"
 
-    def _boss_login(self) -> None:
+    async def _boss_login(self) -> None:
         """打开浏览器，等待用户手动登录 BOSS 直聘，保存 Cookie"""
         try:
             from cassiel.collector.boss import BossCollector
-
-            async def _do_login() -> None:
-                loop = asyncio.get_running_loop()
-
-                def _login_blocking() -> None:
-                    collector = BossCollector(headless=False)
-                    try:
-                        collector.wait_for_login()
-                    finally:
-                        collector.close()
-
-                try:
-                    ui.notify("请在浏览器中完成登录", type="info", timeout=5000)
-                    await loop.run_in_executor(None, _login_blocking)
-                    self._update_boss_status()
-                    ui.notify("登录成功！Cookie 已保存", type="positive")
-                except Exception as e:
-                    ui.notify(f"登录失败: {e}", type="negative")
-
-            asyncio.ensure_future(_do_login())
-
         except ImportError:
             ui.notify("Playwright 未安装，无法启动浏览器", type="negative")
+            return
+
+        collector = BossCollector(headless=False)
+        try:
+            ui.notify("请在浏览器中完成登录", type="info", timeout=5000)
+            await collector.wait_for_login()
+            self._update_boss_status()
+            ui.notify("登录成功！Cookie 已保存", type="positive")
+        except Exception as e:
+            ui.notify(f"登录失败: {e}", type="negative")
+        finally:
+            await collector.close()
 
     # ── 搜索默认值 ─────────────────────────────────────────────
 
