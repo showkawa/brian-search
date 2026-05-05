@@ -32,6 +32,7 @@ from cassiel.ui.candidate_table import CandidateTableComponent
 from cassiel.ui.invitation_preview import InvitationPreviewComponent
 from cassiel.ui.model_options import (
     get_available_model_labels, get_missing_providers, get_provider_for_model,
+    get_available_providers,
 )
 from cassiel.ui.search_form import SearchFormComponent
 

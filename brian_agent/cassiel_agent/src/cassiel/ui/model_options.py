@@ -14,15 +14,6 @@ _PROVIDER_NAMES: dict[str, str] = {
 }
 
 
-def parse_model_key(model_key: str) -> tuple[str, str]:
-    """解析 'provider:model' -> ('provider', 'model')"""
-    try:
-        provider, model = model_key.split(":", 1)
-        return provider.strip(), model.strip()
-    except ValueError:
-        return "glm", "glm-4-flash"
-
-
 def get_models_for_provider(config: AppConfig, provider: str) -> list[str]:
     """获取某提供商已启用的模型列表（原始模型 ID）"""
     return config.enabled_models.get(provider, [])
@@ -52,11 +43,6 @@ def get_missing_providers(config: AppConfig) -> list[str]:
     """获取未配置 Key 的提供商名称列表"""
     available = get_available_providers(config)
     return [name for pid, name in _PROVIDER_NAMES.items() if pid not in available]
-
-
-def provider_name(provider_id: str) -> str:
-    """获取提供商中文名"""
-    return _PROVIDER_NAMES.get(provider_id, provider_id)
 
 
 def get_provider_for_model(config: AppConfig, model_id: str) -> str:
