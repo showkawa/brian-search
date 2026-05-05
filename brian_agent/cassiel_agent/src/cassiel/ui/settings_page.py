@@ -347,18 +347,27 @@ class SettingsPage:
             self.config.credentials.boss_zhipin.status = "unset"
 
     def _boss_login(self) -> None:
-        """打开浏览器让用户手动登录 BOSS 直聘"""
+        """打开浏览器，等待用户手动登录 BOSS 直聘，保存 Cookie"""
         try:
             from cassiel.collector.boss import BossCollector
 
             async def _do_login() -> None:
-                collector = BossCollector(headless=False)
+                loop = asyncio.get_running_loop()
+
+                def _login_blocking() -> None:
+                    collector = BossCollector(headless=False)
+                    try:
+                        collector.wait_for_login()
+                    finally:
+                        collector.close()
+
                 try:
-                    page = collector._ensure_browser()
-                    page.goto("https://www.zhipin.com/web/user/?ka=header-login")
-                    ui.notify("请在浏览器中完成登录，登录成功后点击此按钮", type="info", timeout=10000)
+                    ui.notify("请在浏览器中完成登录", type="info", timeout=5000)
+                    await loop.run_in_executor(None, _login_blocking)
+                    self._update_boss_status()
+                    ui.notify("登录成功！Cookie 已保存", type="positive")
                 except Exception as e:
-                    ui.notify(f"浏览器启动失败: {e}", type="negative")
+                    ui.notify(f"登录失败: {e}", type="negative")
 
             asyncio.ensure_future(_do_login())
 
