@@ -51,5 +51,15 @@
       "token_value": "",
       "last_verified": ""
     }
+  },
+  "enabled_models": {
+    "deepseek": ["deepseek-chat", "deepseek-coder"],
+    "glm": [],
+    "qwen": []
+  },
+  "model_refreshed_at": {
+    "deepseek": "",
+    "glm": "",
+    "qwen": ""
   }
 }
