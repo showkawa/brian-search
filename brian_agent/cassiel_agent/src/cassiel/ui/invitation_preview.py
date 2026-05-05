@@ -94,14 +94,14 @@ class InvitationPreviewComponent:
 
     def _build_component(self) -> None:
         """构建预览组件"""
-        names = [self._get_name(c, i) for i, c in enumerate(self._candidates)]
+        names = [self._get_name(c, i) for i, c in enumerate(self._candidates)] or ["暂无候选人"]
 
         # ── 候选人选择 + 状态标签 ──
         with ui.row().classes("w-full items-center q-mb-md"):
             self.candidate_select = ui.select(
                 label="选择候选人",
                 options=names,
-                value=names[0] if names else "",
+                value=names[0],
                 on_change=self._on_candidate_changed,
             ).classes("w-64").props("outlined dense")
 

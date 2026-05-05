@@ -17,7 +17,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # ── 默认配置路径 ──────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent  # 项目根目录
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent  # 项目根目录 (brain-search)
 DEFAULT_CONFIG_PATH = BASE_DIR / "brian_agent" / "cassiel_agent" / "config.json"
 
 
@@ -107,6 +107,39 @@ class APIKeys:
 
 
 @dataclass
+class CredentialEntry:
+    """外部网站凭据条目"""
+    type: str = "cookie"
+    status: str = "unset"
+    cookie_file: str = ""
+    token_value: str = ""
+    last_verified: str = ""
+
+
+@dataclass
+class CredentialsConfig:
+    """外部网站凭据集合"""
+    boss_zhipin: CredentialEntry = field(default_factory=lambda: CredentialEntry(
+        type="cookie", status="unset", cookie_file="cookies.json",
+    ))
+    linkedin: CredentialEntry = field(default_factory=lambda: CredentialEntry(
+        type="token", status="coming_soon",
+    ))
+
+    def as_dict(self) -> dict[str, dict]:
+        return {k: v.__dict__ for k, v in self.__dict__.items() if isinstance(v, CredentialEntry)}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> CredentialsConfig:
+        entries = {}
+        for k, v in data.items():
+            if isinstance(v, dict):
+                known_keys = CredentialEntry.__dataclass_fields__.keys()
+                entries[k] = CredentialEntry(**{kk: vv for kk, vv in v.items() if kk in known_keys})
+        return cls(**entries)
+
+
+@dataclass
 class AppConfig:
     """应用总配置
 
@@ -116,6 +149,7 @@ class AppConfig:
     search: SearchConfig = field(default_factory=SearchConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     api_keys: APIKeys = field(default_factory=APIKeys)
+    credentials: CredentialsConfig = field(default_factory=CredentialsConfig)
 
     @classmethod
     def from_json(cls, path: Path | str | None = None) -> AppConfig:
@@ -142,11 +176,13 @@ class AppConfig:
         search_data = raw.get("search", {})
         model_data = raw.get("model", {})
         keys_data = raw.get("api_keys", {})
+        credentials_data = raw.get("credentials", {})
 
         return cls(
             search=SearchConfig(**{k: v for k, v in search_data.items() if k in SearchConfig.__dataclass_fields__}),
             model=ModelConfig(**{k: v for k, v in model_data.items() if k in ModelConfig.__dataclass_fields__}),
             api_keys=APIKeys(**{k: v for k, v in keys_data.items() if k in APIKeys.__dataclass_fields__}),
+            credentials=CredentialsConfig.from_dict(credentials_data),
         )
 
     def to_json(self, path: Path | str | None = None) -> None:
@@ -162,6 +198,7 @@ class AppConfig:
             "search": self.search.__dict__,
             "model": self.model.__dict__,
             "api_keys": self.api_keys.__dict__,
+            "credentials": self.credentials.as_dict(),
         }
         config_path.write_text(
             json.dumps(data, ensure_ascii=False, indent=2),
