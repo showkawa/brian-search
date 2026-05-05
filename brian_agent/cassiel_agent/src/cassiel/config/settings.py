@@ -150,6 +150,8 @@ class AppConfig:
     model: ModelConfig = field(default_factory=ModelConfig)
     api_keys: APIKeys = field(default_factory=APIKeys)
     credentials: CredentialsConfig = field(default_factory=CredentialsConfig)
+    enabled_models: dict[str, list[str]] = field(default_factory=dict)
+    model_refreshed_at: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_json(cls, path: Path | str | None = None) -> AppConfig:
@@ -177,12 +179,16 @@ class AppConfig:
         model_data = raw.get("model", {})
         keys_data = raw.get("api_keys", {})
         credentials_data = raw.get("credentials", {})
+        enabled_models = raw.get("enabled_models", {})
+        model_refreshed_at = raw.get("model_refreshed_at", {})
 
         return cls(
             search=SearchConfig(**{k: v for k, v in search_data.items() if k in SearchConfig.__dataclass_fields__}),
             model=ModelConfig(**{k: v for k, v in model_data.items() if k in ModelConfig.__dataclass_fields__}),
             api_keys=APIKeys(**{k: v for k, v in keys_data.items() if k in APIKeys.__dataclass_fields__}),
             credentials=CredentialsConfig.from_dict(credentials_data),
+            enabled_models=enabled_models,
+            model_refreshed_at=model_refreshed_at,
         )
 
     def to_json(self, path: Path | str | None = None) -> None:
@@ -199,6 +205,8 @@ class AppConfig:
             "model": self.model.__dict__,
             "api_keys": self.api_keys.__dict__,
             "credentials": self.credentials.as_dict(),
+            "enabled_models": self.enabled_models,
+            "model_refreshed_at": self.model_refreshed_at,
         }
         config_path.write_text(
             json.dumps(data, ensure_ascii=False, indent=2),
