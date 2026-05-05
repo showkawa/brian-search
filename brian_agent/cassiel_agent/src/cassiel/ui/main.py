@@ -49,7 +49,7 @@ class AppShell:
     def _build_ui(self) -> None:
         """构建应用 UI: 侧边栏 + 页面容器"""
         # ── 侧边栏 ──
-        with ui.left_drawer(bordered=True, fixed=True).classes("w-[200px] q-pa-none") as drawer:
+        with ui.left_drawer(bordered=True, fixed=True).classes("w-[160px] q-pa-none") as drawer:
             self._sidebar = Sidebar(on_navigate=self._navigate)
             self._sidebar.build()
 
