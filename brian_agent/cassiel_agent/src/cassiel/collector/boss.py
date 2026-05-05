@@ -70,7 +70,7 @@ class LoginExpiredError(CollectorError):
 
 
 # ── 常量 ──────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
 COOKIES_FILE = BASE_DIR / "brian_agent" / "cassiel_agent" / "cookies.json"
 DATA_DIR = BASE_DIR / "brian_agent" / "cassiel_agent" / "data"
 
