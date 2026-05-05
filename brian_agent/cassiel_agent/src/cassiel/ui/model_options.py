@@ -57,3 +57,11 @@ def get_missing_providers(config: AppConfig) -> list[str]:
 def provider_name(provider_id: str) -> str:
     """获取提供商中文名"""
     return _PROVIDER_NAMES.get(provider_id, provider_id)
+
+
+def get_provider_for_model(config: AppConfig, model_id: str) -> str:
+    """根据模型 ID 反查所属提供商"""
+    for pid, models in config.enabled_models.items():
+        if model_id in models:
+            return pid
+    return "deepseek"

@@ -31,8 +31,7 @@ from cassiel.writer.invitation import InvitationWriter
 from cassiel.ui.candidate_table import CandidateTableComponent
 from cassiel.ui.invitation_preview import InvitationPreviewComponent
 from cassiel.ui.model_options import (
-    _MODEL_OPTIONS, parse_model_key, all_model_labels, key_from_label,
-    get_available_providers, get_available_model_labels, get_missing_providers,
+    get_available_model_labels, get_missing_providers, get_provider_for_model,
 )
 from cassiel.ui.search_form import SearchFormComponent
 
@@ -143,16 +142,16 @@ class RecruitPage:
                 except Exception:
                     pass
 
-    def _get_provider_for_step(self, model_key: str) -> LLMProvider:
+    def _get_provider_for_step(self, model_id: str) -> LLMProvider:
         """根据模型选择获取或创建 LLM 提供商"""
-        provider_name, model_name = parse_model_key(model_key)
+        provider_name = get_provider_for_model(self.config, model_id)
         api_keys = self.config.api_keys
         api_key = {
             "glm": api_keys.glm_key,
             "qwen": api_keys.qwen_key,
             "deepseek": api_keys.deepseek_key,
         }.get(provider_name, "")
-        return create_provider(provider_name, api_key=api_key, model_name=model_name)
+        return create_provider(provider_name, api_key=api_key, model_name=model_id)
 
     # ═══════════════════════════════════════════════════════════
     # 主页面构建
@@ -185,32 +184,34 @@ class RecruitPage:
             available_labels = get_available_model_labels(self.config)
             missing = get_missing_providers(self.config)
 
-            search_default = f"{self.config.model.search_provider}:{self.config.model.search_model}"
-            search_default_label = _MODEL_OPTIONS.get(search_default, available_labels[0] if available_labels else "GLM-4 Flash (智谱) — 快速")
+            if not available_labels:
+                with ui.row().classes("items-center"):
+                    ui.icon("warning").classes("text-orange q-mr-sm")
+                    ui.label(
+                        "暂无可用模型，请先在左侧「⚙️ 账户配置」中测试连接并启用模型"
+                    ).classes("text-body1 text-orange-8")
+            else:
+                search_default = self.config.model.search_model or ""
+                eval_default = self.config.model.evaluate_model or ""
+                write_default = self.config.model.write_model or ""
 
-            eval_default = f"{self.config.model.evaluate_provider}:{self.config.model.evaluate_model}"
-            eval_default_label = _MODEL_OPTIONS.get(eval_default, available_labels[-1] if available_labels else "DeepSeek Chat — 通用")
+                search_model_select = ui.select(
+                    label="搜索/采集模型",
+                    options=available_labels,
+                    value=search_default if search_default in available_labels else (available_labels[0] if available_labels else ""),
+                ).classes("w-64").props("outlined dense")
 
-            write_default = f"{self.config.model.write_provider}:{self.config.model.write_model}"
-            write_default_label = _MODEL_OPTIONS.get(write_default, available_labels[0] if available_labels else "Qwen Plus (通义) — 均衡")
+                eval_model_select = ui.select(
+                    label="评估/筛选模型",
+                    options=available_labels,
+                    value=eval_default if eval_default in available_labels else (available_labels[0] if available_labels else ""),
+                ).classes("w-64").props("outlined dense")
 
-            search_model_select = ui.select(
-                label="搜索/采集模型",
-                options=available_labels,
-                value=search_default_label if search_default_label in available_labels else (available_labels[0] if available_labels else "无可用模型"),
-            ).classes("w-64").props("outlined dense")
-
-            eval_model_select = ui.select(
-                label="评估/筛选模型",
-                options=available_labels,
-                value=eval_default_label if eval_default_label in available_labels else (available_labels[-1] if available_labels else "无可用模型"),
-            ).classes("w-64").props("outlined dense")
-
-            write_model_select = ui.select(
-                label="文案生成模型",
-                options=available_labels,
-                value=write_default_label if write_default_label in available_labels else (available_labels[0] if available_labels else "无可用模型"),
-            ).classes("w-64").props("outlined dense")
+                write_model_select = ui.select(
+                    label="文案生成模型",
+                    options=available_labels,
+                    value=write_default if write_default in available_labels else (available_labels[0] if available_labels else ""),
+                ).classes("w-64").props("outlined dense")
 
             # 未配置的提供商提示
             if missing:
@@ -528,18 +529,17 @@ class RecruitPage:
         config = search_form.get_config()
 
         # 解析模型选择
-        model_label = eval_model_select.value
-        model_key = key_from_label(model_label, "deepseek:deepseek-chat")
+        model_id = eval_model_select.value
 
         async def _evaluate() -> None:
             try:
-                log.push(f"🤖 开始评估 {self._candidates.total_count} 位候选人 (模型: {model_label})")
+                log.push(f"🤖 开始评估 {self._candidates.total_count} 位候选人 (模型: {model_id})")
                 ui.notify(f"正在评估 {self._candidates.total_count} 位候选人，请稍候...", type="info")
 
                 loop = asyncio.get_running_loop()
 
                 def _do_evaluate() -> CandidateList:
-                    provider = self._get_provider_for_step(model_key)
+                    provider = self._get_provider_for_step(model_id)
                     evaluator = CandidateFilter(provider=provider)
                     return evaluator.evaluate(self._candidates, config)
 
@@ -596,19 +596,18 @@ class RecruitPage:
             return
 
         config = search_form.get_config()
-        model_label = write_model_select.value
-        model_key = key_from_label(model_label, "qwen:qwen-plus")
+        model_id = write_model_select.value
 
         async def _generate() -> None:
             try:
                 count = len(self._candidates.candidates)
-                log.push(f"✍️ 开始生成 {count} 条邀约文案 (模型: {model_label})")
+                log.push(f"✍️ 开始生成 {count} 条邀约文案 (模型: {model_id})")
                 ui.notify(f"正在生成 {count} 条邀约文案...", type="info")
 
                 loop = asyncio.get_running_loop()
 
                 def _do_generate() -> dict[str, str]:
-                    provider = self._get_provider_for_step(model_key)
+                    provider = self._get_provider_for_step(model_id)
                     writer = InvitationWriter(provider=provider)
                     self._cached_writer = writer
                     return writer.generate_batch(self._candidates.candidates, config)
@@ -646,10 +645,9 @@ class RecruitPage:
     ) -> str:
         """为单个候选人重新生成邀约文案 (同步回调，由预览组件触发)"""
         config = search_form.get_config()
-        model_label = write_model_select.value
-        model_key = key_from_label(model_label, "qwen:qwen-plus")
+        model_id = write_model_select.value
 
-        provider = self._get_provider_for_step(model_key)
+        provider = self._get_provider_for_step(model_id)
         writer = InvitationWriter(provider=provider)
         text = writer.generate(candidate, config)
         log.push(f"✍️ 已重新生成: {candidate.name or '候选人'}")
