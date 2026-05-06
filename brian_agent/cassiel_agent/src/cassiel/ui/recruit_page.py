@@ -174,10 +174,6 @@ class RecruitPage:
 
         ui.label("📋 招聘Agent").classes("text-h5 q-mb-md")
 
-        # ── 全局操作日志 ──
-        log = ui.log(max_lines=50).classes("w-full h-32 q-mb-md")
-        log.push("系统就绪，等待操作...")
-
         # ── LLM 模型选择栏 ──
         with ui.row().classes("w-full q-mb-md gap-4 items-center"):
             ui.icon("settings").classes("text-grey-6")
@@ -232,7 +228,7 @@ class RecruitPage:
                     ui.button(
                         "下一步",
                         icon="arrow_forward",
-                        on_click=lambda: self._on_step1_next(search_form, stepper, log),
+                        on_click=lambda: self._on_step1_next(search_form, stepper),
                     )
                     ui.button(
                         "重置",
@@ -252,13 +248,13 @@ class RecruitPage:
                         "开始搜索",
                         icon="search",
                         on_click=lambda: self._start_search(
-                            search_form, search_log, search_progress, stepper, log
+                            search_form, search_log, search_progress, stepper
                         ),
                     )
                     ui.button(
                         "跳过 (使用模拟数据)",
                         icon="skip_next",
-                        on_click=lambda: self._skip_search(search_log, stepper, log),
+                        on_click=lambda: self._skip_search(search_log, stepper),
                     ).props("flat")
 
             # ── Step 3: AI 筛选 ──
@@ -282,7 +278,6 @@ class RecruitPage:
 
                     if candidate:
                         table.show_detail_dialog(candidate)
-                        log.push(f"选中候选人: {name} ({score}分)")
 
                 table.grid.on("rowClicked", on_row_clicked)
 
@@ -291,7 +286,7 @@ class RecruitPage:
                         "运行 AI 筛选",
                         icon="psychology",
                         on_click=lambda: self._run_evaluation(
-                            search_form, eval_model_select, table, stepper, log
+                            search_form, eval_model_select, table, stepper
                         ),
                     )
                     ui.button("下一步：生成邀约", icon="arrow_forward", on_click=stepper.next)
@@ -305,10 +300,10 @@ class RecruitPage:
                     candidates=self._candidates.candidates,
                     content_map={},
                     on_regenerate=lambda c: self._regenerate_single(
-                        c, search_form, write_model_select, log
+                        c, search_form, write_model_select
                     ),
-                    on_send=lambda c, t: self._handle_send(c, t, log),
-                    on_skip=lambda c: self._handle_skip(c, log),
+                    on_send=lambda c, t: self._handle_send(c, t),
+                    on_skip=lambda c: self._handle_skip(c),
                 )
 
                 with ui.row().classes("q-mt-md gap-2"):
@@ -316,7 +311,7 @@ class RecruitPage:
                         "生成全部邀约",
                         icon="auto_awesome",
                         on_click=lambda: self._generate_all_invitations(
-                            search_form, write_model_select, preview, stepper, log
+                            search_form, write_model_select, preview, stepper
                         ),
                     )
                     ui.button("上一步", icon="arrow_back", on_click=stepper.previous).props("flat")
@@ -328,9 +323,7 @@ class RecruitPage:
     def _on_step1_next(
         self,
         search_form: SearchFormComponent,
-        stepper: Any,
-        log: ui.log,
-    ) -> None:
+        stepper: Any) -> None:
         """Step 1 → 验证表单 → 保存配置 → 进入 Step 2"""
         errors = search_form.validate()
         if errors:
@@ -340,9 +333,6 @@ class RecruitPage:
 
         config = search_form.get_config()
         self.config.search = config
-        log.push(f"✅ 搜索条件: 关键词={config.keyword}, 城市={config.city}, "
-                 f"薪资={config.salary_min}K-{config.salary_max}K, "
-                 f"经验={config.experience}, 学历={config.education}")
         ui.notify(f"条件已设置: {config.keyword} @ {config.city}", type="positive")
         stepper.next()
 
@@ -353,11 +343,8 @@ class RecruitPage:
     def _start_search(
         self,
         search_form: SearchFormComponent,
-        search_log: ui.log,
-        progress: ui.linear_progress,
-        stepper: Any,
-        log: ui.log,
-    ) -> None:
+        search_progress: ui.linear_progress,
+        stepper: Any) -> None:
         """启动真实搜索 (在后台线程中运行 Playwright)
 
         错误处理:
@@ -367,7 +354,6 @@ class RecruitPage:
         """
         config = search_form.get_config()
         search_log.push("▶ 开始搜索...")
-        log.push(f"🔍 开始搜索: {config.keyword} @ {config.city}")
         progress.value = 0
 
         async def _run_search(retry_count: int = 0) -> None:
@@ -388,8 +374,6 @@ class RecruitPage:
                 progress.value = 1.0
                 self._candidates = candidates
                 search_log.push(f"✅ 搜索完成！共找到 {candidates.total_count} 位候选人")
-                log.push(f"✅ 搜索完成: {candidates.total_count} 位候选人")
-
                 # 持久化
                 try:
                     with SessionStore() as store:
@@ -400,16 +384,14 @@ class RecruitPage:
                             result_count=candidates.total_count,
                         )
                         store.save_candidates(self._search_id, candidates)
-                        log.push(f"💾 搜索结果已保存 (search_id={self._search_id})")
                 except Exception as e:
-                    log.push(f"⚠️ 保存失败: {e}")
+                    pass
 
                 ui.notify(f"搜索完成！找到 {candidates.total_count} 位候选人", type="positive")
                 stepper.next()
 
             except CaptchaError as e:
                 search_log.push(f"🔐 {e}")
-                log.push(f"🔐 验证码拦截: {e}")
                 ui.notify(
                     "检测到验证码！请在浏览器窗口中手动完成验证后重试",
                     type="warning",
@@ -421,7 +403,6 @@ class RecruitPage:
                 if retry_count < max_retries:
                     delay = backoff_base * (2 ** retry_count)
                     search_log.push(f"⏱ 频率限制，{delay:.0f}s 后重试 ({retry_count + 1}/{max_retries})...")
-                    log.push(f"⏱ 频率限制: {e}，{delay:.0f}s 后重试")
                     ui.notify(
                         f"请求过于频繁，{delay:.0f}秒后自动重试...",
                         type="warning",
@@ -431,7 +412,6 @@ class RecruitPage:
                     await _run_search(retry_count + 1)
                 else:
                     search_log.push(f"❌ 频率限制重试耗尽")
-                    log.push(f"❌ 频率限制重试耗尽: {e}")
                     ui.notify(
                         "请求过于频繁，请手动等待几分钟后重试",
                         type="negative",
@@ -440,7 +420,6 @@ class RecruitPage:
 
             except NetworkError as e:
                 search_log.push(f"🌐 {e}")
-                log.push(f"🌐 网络错误: {e}")
                 ui.notify(
                     f"网络连接失败: {e}\n请检查网络后重试",
                     type="negative",
@@ -449,7 +428,6 @@ class RecruitPage:
 
             except LoginExpiredError as e:
                 search_log.push(f"🔑 {e}")
-                log.push(f"🔑 登录过期: {e}")
                 ui.notify(
                     "登录已过期，请在浏览器窗口中重新登录后重试",
                     type="warning",
@@ -459,7 +437,6 @@ class RecruitPage:
             except Exception as e:
                 err_msg = f"搜索失败: {e}"
                 search_log.push(f"❌ {err_msg}")
-                log.push(f"❌ {err_msg}")
                 traceback.print_exc()
                 ui.notify(err_msg, type="negative")
 
@@ -467,10 +444,7 @@ class RecruitPage:
 
     def _skip_search(
         self,
-        search_log: ui.log,
-        stepper: Any,
-        log: ui.log,
-    ) -> None:
+        search_stepper: Any) -> None:
         """跳过真实搜索，使用模拟数据 (开发/测试用)"""
         config = self.config.search
 
@@ -486,8 +460,6 @@ class RecruitPage:
                 await asyncio.sleep(0.5)
                 search_progress = ui.linear_progress(value=val)
                 search_log.push(msg)
-                log.push(f"[模拟] {msg}")
-
             # 填充模拟数据
             self._candidates = CandidateList(
                 search_keyword=config.keyword,
@@ -510,9 +482,7 @@ class RecruitPage:
         search_form: SearchFormComponent,
         eval_model_select: ui.select,
         table: CandidateTableComponent,
-        stepper: Any,
-        log: ui.log,
-    ) -> None:
+        stepper: Any) -> None:
         """运行 LLM 评估筛选
 
         错误处理: LLM 调用失败时逐个跳过，不中断整体流程
@@ -528,7 +498,7 @@ class RecruitPage:
 
         async def _evaluate() -> None:
             try:
-                log.push(f"🤖 开始评估 {self._candidates.total_count} 位候选人 (模型: {model_id})")
+                pass  # (removed log)
                 ui.notify(f"正在评估 {self._candidates.total_count} 位候选人，请稍候...", type="info")
 
                 loop = asyncio.get_running_loop()
@@ -543,8 +513,6 @@ class RecruitPage:
                 self._candidates = scored
                 table.update(scored)
                 top_score = scored.candidates[0].score if scored.candidates else "N/A"
-                log.push(f"✅ 评估完成！最高分: {top_score}")
-
                 # 保存评分结果
                 if self._search_id:
                     try:
@@ -557,7 +525,6 @@ class RecruitPage:
 
             except Exception as e:
                 err_msg = f"评估失败: {e}"
-                log.push(f"❌ {err_msg}")
                 traceback.print_exc()
 
                 # 区分错误类型，给用户更友好的提示
@@ -582,9 +549,7 @@ class RecruitPage:
         search_form: SearchFormComponent,
         write_model_select: ui.select,
         preview: InvitationPreviewComponent,
-        stepper: Any,
-        log: ui.log,
-    ) -> None:
+        stepper: Any) -> None:
         """批量生成所有候选人的邀约文案"""
         if not self._candidates.candidates:
             ui.notify("没有候选人数据", type="warning")
@@ -596,7 +561,7 @@ class RecruitPage:
         async def _generate() -> None:
             try:
                 count = len(self._candidates.candidates)
-                log.push(f"✍️ 开始生成 {count} 条邀约文案 (模型: {model_id})")
+                pass  # (removed log)
                 ui.notify(f"正在生成 {count} 条邀约文案...", type="info")
 
                 loop = asyncio.get_running_loop()
@@ -610,12 +575,11 @@ class RecruitPage:
                 content_map = await loop.run_in_executor(None, _do_generate)
 
                 preview.update_content_map(content_map)
-                log.push(f"✅ 已生成 {len(content_map)} 条邀约文案")
+                pass  # (removed log)
                 ui.notify(f"已生成 {len(content_map)} 条邀约文案！", type="positive")
 
             except Exception as e:
                 err_msg = f"文案生成失败: {e}"
-                log.push(f"❌ {err_msg}")
                 traceback.print_exc()
 
                 # 区分错误类型
@@ -635,9 +599,7 @@ class RecruitPage:
         self,
         candidate: Candidate,
         search_form: SearchFormComponent,
-        write_model_select: ui.select,
-        log: ui.log,
-    ) -> str:
+        write_model_select: ui.select) -> str:
         """为单个候选人重新生成邀约文案 (同步回调，由预览组件触发)"""
         config = search_form.get_config()
         model_id = write_model_select.value
@@ -645,13 +607,11 @@ class RecruitPage:
         provider = self._get_provider_for_step(model_id)
         writer = InvitationWriter(provider=provider)
         text = writer.generate(candidate, config)
-        log.push(f"✍️ 已重新生成: {candidate.name or '候选人'}")
         return text
 
-    def _handle_send(self, candidate: Candidate, content: str, log: ui.log) -> None:
+    def _handle_send(self, candidate: Candidate, content: str) -> None:
         """处理邀约发送 (回调)"""
         name = candidate.name or "候选人"
-        log.push(f"📨 发送邀约给: {name}")
         # v1 阶段仅记录，不实际发送 (遵守 G-09/G-10)
         try:
             with SessionStore() as store:
@@ -662,9 +622,8 @@ class RecruitPage:
                     status="sent",
                 )
         except Exception as e:
-            log.push(f"⚠️ 发送记录保存失败: {e}")
+            pass
 
-    def _handle_skip(self, candidate: Candidate, log: ui.log) -> None:
+    def _handle_skip(self, candidate: Candidate) -> None:
         """处理跳过候选人 (回调)"""
         name = candidate.name or "候选人"
-        log.push(f"⏭ 跳过候选人: {name}")
