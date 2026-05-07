@@ -113,14 +113,9 @@ class BossApiClient:
         city: str = "",
         page: int = 1,
     ) -> dict[str, Any] | None:
-        """搜索候选人（招聘端）
-
-        Returns:
-            API 响应数据 或 None
-        """
         params: dict[str, Any] = {"page": page, "pageSize": 20}
         if keyword:
-            params["expectId"] = keyword
+            params["query"] = keyword
         if city:
             params["city"] = city
 
@@ -132,7 +127,11 @@ class BossApiClient:
             )
             data = resp.json()
             if data.get("code") == 0:
-                return data.get("zpData", {})
+                zpdata = data.get("zpData", {})
+                geek_list = zpdata.get("geekList", zpdata.get("resultList", []))
+                if not geek_list:
+                    logger.warning("搜索返回空结果")
+                return zpdata
             else:
                 logger.warning("搜索失败: code=%s, msg=%s", data.get("code"), data.get("message"))
                 if data.get("code") in (37, 121, 122):

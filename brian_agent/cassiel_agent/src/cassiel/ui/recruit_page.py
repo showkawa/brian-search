@@ -15,13 +15,6 @@ from typing import Any
 
 from nicegui import ui
 
-from cassiel.collector.boss import (
-    BossCollector,
-    CaptchaError,
-    RateLimitError,
-    NetworkError,
-    LoginExpiredError,
-)
 from cassiel.config.settings import AppConfig, SearchConfig
 from cassiel.evaluator.filter import CandidateFilter
 from cassiel.llm.providers import LLMProvider, create_provider
@@ -418,96 +411,71 @@ class RecruitPage:
     def _start_search(
         self,
         search_form: SearchFormComponent,
+        search_log: ui.log,
         search_progress: ui.linear_progress,
         stepper: Any) -> None:
-        """启动真实搜索 (在后台线程中运行 Playwright)
-
-        错误处理:
-        - CaptchaError → 通知用户 + 暂停
-        - RateLimitError → 指数退避重试 + 通知
-        - NetworkError → 重试提示 + 通知
-        """
         config = search_form.get_config()
         search_log.push("▶ 开始搜索...")
-        progress.value = 0
+        search_progress.value = 0
 
-        async def _run_search(retry_count: int = 0) -> None:
-            """异步包装同步搜索，支持错误恢复"""
-            max_retries = 3
-            backoff_base = 5.0  # 指数退避基数 (秒)
+        if not self._boss_client:
+            ui.notify("请先登录 BOSS 直聘", type="warning")
+            return
 
+        client = self._boss_client
+
+        async def _run_search() -> None:
             try:
-                collector = BossCollector(
-                    headless=False,
-                    on_log=lambda msg: search_log.push(msg),
+                search_log.push(f"🔍 搜索: {config.keyword} @ {config.city}")
+                data = client.search_candidates(
+                    keyword=config.keyword,
+                    city=config.city_code or config.get_city_code(),
                 )
-                try:
-                    candidates = await collector.search(config=config)
-                finally:
-                    await collector.close()
 
-                progress.value = 1.0
+                if data is None:
+                    search_log.push("❌ 搜索失败，请检查网络或重新登录")
+                    ui.notify("搜索失败", type="negative")
+                    return
+
+                geek_list = data.get("geekList", data.get("resultList", []))
+                if not geek_list:
+                    search_log.push("⚠ 未找到匹配候选人")
+                    ui.notify("未找到匹配候选人", type="warning")
+                    return
+
+                candidates = CandidateList(
+                    search_keyword=config.keyword,
+                    search_city=config.city,
+                )
+                for geek in geek_list:
+                    candidates.add(Candidate(
+                        name=geek.get("geekName", geek.get("name", "")),
+                        title=geek.get("expectPositionName", geek.get("jobName", "")),
+                        salary=str(geek.get("expectSalary", geek.get("salary", ""))),
+                        experience=geek.get("workYearDesc", geek.get("workYear", "")),
+                        education=geek.get("degreeDesc", geek.get("degree", "")),
+                        company="",
+                        online_status="",
+                        raw_data=geek,
+                    ))
+
+                search_progress.value = 1.0
                 self._candidates = candidates
                 search_log.push(f"✅ 搜索完成！共找到 {candidates.total_count} 位候选人")
-                # 持久化
+
                 try:
                     with SessionStore() as store:
                         self._search_id = store.save_search(
-                            keyword=config.keyword,
-                            city=config.city,
+                            keyword=config.keyword, city=config.city,
                             city_code=config.get_city_code(),
                             result_count=candidates.total_count,
                         )
                         store.save_candidates(self._search_id, candidates)
-                except Exception as e:
+                except Exception:
                     pass
 
                 ui.notify(f"搜索完成！找到 {candidates.total_count} 位候选人", type="positive")
                 stepper.next()
-
-            except CaptchaError as e:
-                search_log.push(f"🔐 {e}")
-                ui.notify(
-                    "检测到验证码！请在浏览器窗口中手动完成验证后重试",
-                    type="warning",
-                    timeout=10000,
-                )
-                progress.value = 0.5
-
-            except RateLimitError as e:
-                if retry_count < max_retries:
-                    delay = backoff_base * (2 ** retry_count)
-                    search_log.push(f"⏱ 频率限制，{delay:.0f}s 后重试 ({retry_count + 1}/{max_retries})...")
-                    ui.notify(
-                        f"请求过于频繁，{delay:.0f}秒后自动重试...",
-                        type="warning",
-                        timeout=int(delay * 1000),
-                    )
-                    await asyncio.sleep(delay)
-                    await _run_search(retry_count + 1)
-                else:
-                    search_log.push(f"❌ 频率限制重试耗尽")
-                    ui.notify(
-                        "请求过于频繁，请手动等待几分钟后重试",
-                        type="negative",
-                        timeout=8000,
-                    )
-
-            except NetworkError as e:
-                search_log.push(f"🌐 {e}")
-                ui.notify(
-                    f"网络连接失败: {e}\n请检查网络后重试",
-                    type="negative",
-                    timeout=10000,
-                )
-
-            except LoginExpiredError as e:
-                search_log.push(f"🔑 {e}")
-                ui.notify(
-                    "登录已过期，请在浏览器窗口中重新登录后重试",
-                    type="warning",
-                    timeout=10000,
-                )
 
             except Exception as e:
                 err_msg = f"搜索失败: {e}"
@@ -519,30 +487,27 @@ class RecruitPage:
 
     def _skip_search(
         self,
-        search_stepper: Any) -> None:
-        """跳过真实搜索，使用模拟数据 (开发/测试用)"""
+        search_log: ui.log,
+        stepper: Any) -> None:
         config = self.config.search
 
         async def _simulate() -> None:
             steps = [
-                (0.15, "正在连接 BOSS 直聘..."),
-                (0.30, "正在获取职位列表..."),
-                (0.50, "正在抓取候选人信息..."),
-                (0.75, "正在解析简历数据..."),
-                (1.0, "搜索完成！共找到 5 位模拟候选人"),
+                "正在连接 BOSS 直聘...",
+                "正在获取职位列表...",
+                "正在抓取候选人信息...",
+                "正在解析简历数据...",
+                "搜索完成！共找到 5 位模拟候选人",
             ]
-            for val, msg in steps:
+            for msg in steps:
                 await asyncio.sleep(0.5)
-                search_progress = ui.linear_progress(value=val)
                 search_log.push(msg)
-            # 填充模拟数据
             self._candidates = CandidateList(
                 search_keyword=config.keyword,
                 search_city=config.city,
             )
             for i, sample in enumerate(_SIMULATED_CANDIDATES):
                 self._candidates.add(Candidate(**sample))
-
             ui.notify("模拟搜索完成 (5 位候选人)", type="info")
             stepper.next()
 
