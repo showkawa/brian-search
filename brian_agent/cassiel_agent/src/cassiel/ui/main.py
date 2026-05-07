@@ -56,26 +56,13 @@ class AppShell:
         self._schedule_startup_check()
 
     def _schedule_startup_check(self) -> None:
-        """启动后 2 秒在后台验证 BOSS Cookie"""
 
         async def _check() -> None:
             await asyncio.sleep(2)
             try:
-                from cassiel.collector.boss import BossCollector, COOKIES_FILE
-                if not COOKIES_FILE.exists():
-                    return
-
-                collector = BossCollector(headless=True)
-                try:
-                    is_valid = await collector.verify_cookies()
-                    if is_valid:
-                        self._settings_page._update_boss_status()
-                    else:
-                        self._settings_page._boss_status.text = "⚠ 已过期"
-                        self._settings_page._boss_status.classes("text-orange", remove="text-positive text-grey-5 text-negative")
-                        self.config.credentials.boss_zhipin.status = "expired"
-                finally:
-                    await collector.close()
+                from cassiel.collector.boss_client import COOKIES_FILE
+                if COOKIES_FILE.exists():
+                    self._settings_page._update_boss_status()
             except Exception:
                 pass
 

@@ -319,11 +319,11 @@ class SettingsPage:
         with ui.card().classes("w-full q-mb-md"):
             ui.label("🌐 外部网站凭据").classes("text-subtitle1 q-mb-md text-primary")
 
-            # BOSS 直聘
+            # BOSS 直聘 — 状态只读，登录操作在招聘页
             with ui.row().classes("w-full items-center gap-4"):
                 ui.label("BOSS 直聘").classes("w-24 text-body2 text-grey-7")
                 self._boss_status = ui.label("").classes("text-caption")
-                ui.button("打开浏览器登录", on_click=self._boss_login).props("flat dense color=primary")
+                ui.label("登录请前往「📋 招聘Agent」").classes("text-caption text-grey-5")
                 self._update_boss_status()
 
             # LinkedIn (V2 预留)
@@ -333,9 +333,7 @@ class SettingsPage:
                 ui.button("未开通").props("flat dense disabled")
 
     def _update_boss_status(self) -> None:
-        """更新 BOSS 直聘 Cookie 状态"""
-        from pathlib import Path
-        from cassiel.collector.boss import COOKIES_FILE
+        from cassiel.collector.boss_client import COOKIES_FILE
 
         if COOKIES_FILE.exists():
             self._boss_status.text = "✓ 已登录"
@@ -345,25 +343,6 @@ class SettingsPage:
             self._boss_status.text = "⚠ 未登录"
             self._boss_status.classes("text-orange", remove="text-positive text-grey-5 text-negative")
             self.config.credentials.boss_zhipin.status = "unset"
-
-    async def _boss_login(self) -> None:
-        """打开浏览器，等待用户手动登录 BOSS 直聘，保存 Cookie"""
-        try:
-            from cassiel.collector.boss import BossCollector
-        except ImportError:
-            ui.notify("Playwright 未安装，无法启动浏览器", type="negative")
-            return
-
-        collector = BossCollector(headless=False)
-        try:
-            ui.notify("请在浏览器中完成登录", type="info", timeout=5000)
-            await collector.wait_for_login()
-            self._update_boss_status()
-            ui.notify("登录成功！Cookie 已保存", type="positive")
-        except Exception as e:
-            ui.notify(f"登录失败: {e}", type="negative")
-        finally:
-            await collector.close()
 
     # ── 搜索默认值 ─────────────────────────────────────────────
 
