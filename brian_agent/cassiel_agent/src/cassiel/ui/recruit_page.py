@@ -174,6 +174,29 @@ class RecruitPage:
 
         ui.label("📋 招聘Agent").classes("text-h5 q-mb-md")
 
+        # ── BOSS 直聘登录栏 ──
+        self._boss_logged_in = False
+        self._boss_client = None
+
+        with ui.card().classes("w-full q-mb-md") as self._boss_card:
+            with ui.row().classes("w-full items-center gap-4"):
+                self._boss_status_icon = ui.icon("").classes("text-grey-6")
+                self._boss_status_label = ui.label("").classes("text-body2")
+                self._boss_source_label = ui.label("").classes("text-caption text-grey-6")
+                ui.space()
+                self._boss_extract_btn = ui.button(
+                    "🔐 从浏览器提取",
+                    on_click=self._boss_extract_cookies,
+                ).props("flat dense color=primary")
+                self._boss_refresh_btn = ui.button(
+                    "🔄 刷新",
+                    on_click=self._boss_extract_cookies,
+                ).props("flat dense color=primary")
+                self._boss_logout_btn = ui.button(
+                    "🚪 退出",
+                    on_click=self._boss_logout,
+                ).props("flat dense")
+
         # ── LLM 模型选择栏 ──
         with ui.row().classes("w-full q-mb-md gap-4 items-center"):
             ui.icon("settings").classes("text-grey-6")
@@ -216,105 +239,153 @@ class RecruitPage:
                 ui.label(f"未配置: {missing_text}，前往 账户配置").classes("text-caption text-orange-6")
 
         # ═══════════════════════════════════════════════════════
-        # Stepper 工作流
+        # Stepper 工作流（需登录后可见）
         # ═══════════════════════════════════════════════════════
 
-        with ui.stepper().classes("w-full") as stepper:
-            # ── Step 1: 设置条件 ──
-            with ui.step("设置条件"):
-                search_form = SearchFormComponent(self.config.search)
+        self._stepper_container = ui.element('div').classes('w-full')
 
-                with ui.row().classes("q-mt-md gap-2"):
-                    ui.button(
-                        "下一步",
-                        icon="arrow_forward",
-                        on_click=lambda: self._on_step1_next(search_form, stepper),
-                    )
-                    ui.button(
-                        "重置",
-                        icon="restart_alt",
-                        on_click=lambda: search_form.reset(),
-                    ).props("flat")
+        with self._stepper_container:
+            with ui.stepper().classes('w-full') as stepper:
+                with ui.step('设置条件'):
+                    search_form = SearchFormComponent(self.config.search)
+                    with ui.row().classes('q-mt-md gap-2'):
+                        ui.button('下一步', icon='arrow_forward',
+                            on_click=lambda: self._on_step1_next(search_form, stepper))
+                        ui.button('重置', icon='restart_alt',
+                            on_click=lambda: search_form.reset()).props('flat')
 
-            # ── Step 2: 自动搜索 ──
-            with ui.step("自动搜索"):
-                ui.label("正在搜索候选人...").classes("text-h6")
+                with ui.step('自动搜索'):
+                    ui.label('正在搜索候选人...').classes('text-h6')
+                    search_log = ui.log(max_lines=30).classes('w-full h-48')
+                    search_progress = ui.linear_progress(value=0).classes('w-full q-mt-sm')
+                    with ui.row().classes('q-mt-md gap-2'):
+                        ui.button('开始搜索', icon='search',
+                            on_click=lambda: self._start_search(search_form, search_log, search_progress, stepper))
+                        ui.button('跳过 (使用模拟数据)', icon='skip_next',
+                            on_click=lambda: self._skip_search(search_log, stepper)).props('flat')
 
-                search_log = ui.log(max_lines=30).classes("w-full h-48")
-                search_progress = ui.linear_progress(value=0).classes("w-full q-mt-sm")
+                with ui.step('AI 筛选'):
+                    ui.label('候选人筛选结果').classes('text-h6')
+                    table = CandidateTableComponent(self._candidates)
+                    selected_label = ui.label('请点击表格行查看候选人详情').classes('text-subtitle2 text-grey-6 q-mt-md')
+                    def on_row_clicked(e: Any) -> None:
+                        row_data = e.args.get('data')
+                        if not row_data: return
+                        candidate = table.mark_selected(row_data)
+                        selected_label.text = f"已选择: {row_data.get('name', '')} — {row_data.get('title', '')} ({row_data.get('score', 'N/A')}分)"
+                        if candidate: table.show_detail_dialog(candidate)
+                    table.grid.on('rowClicked', on_row_clicked)
+                    with ui.row().classes('q-mt-md gap-2'):
+                        ui.button('运行 AI 筛选', icon='psychology',
+                            on_click=lambda: self._run_evaluation(search_form, eval_model_select, table, stepper))
+                        ui.button('下一步：生成邀约', icon='arrow_forward', on_click=stepper.next)
+                        ui.button('上一步', icon='arrow_back', on_click=stepper.previous).props('flat')
 
-                with ui.row().classes("q-mt-md gap-2"):
-                    ui.button(
-                        "开始搜索",
-                        icon="search",
-                        on_click=lambda: self._start_search(
-                            search_form, search_log, search_progress, stepper
-                        ),
-                    )
-                    ui.button(
-                        "跳过 (使用模拟数据)",
-                        icon="skip_next",
-                        on_click=lambda: self._skip_search(search_log, stepper),
-                    ).props("flat")
+                with ui.step('生成邀约'):
+                    ui.label('邀约文案预览').classes('text-h6')
+                    preview = InvitationPreviewComponent(
+                        candidates=self._candidates.candidates, content_map={},
+                        on_regenerate=lambda c: self._regenerate_single(c, search_form, write_model_select),
+                        on_send=lambda c, t: self._handle_send(c, t),
+                        on_skip=lambda c: self._handle_skip(c))
+                    with ui.row().classes('q-mt-md gap-2'):
+                        ui.button('生成全部邀约', icon='auto_awesome',
+                            on_click=lambda: self._generate_all_invitations(search_form, write_model_select, preview, stepper))
+                        ui.button('上一步', icon='arrow_back', on_click=stepper.previous).props('flat')
 
-            # ── Step 3: AI 筛选 ──
-            with ui.step("AI 筛选"):
-                ui.label("候选人筛选结果").classes("text-h6")
-                table = CandidateTableComponent(self._candidates)
+        self._sync_boss_ui()
+        self._sync_stepper_visibility()
 
-                selected_label = ui.label("请点击表格行查看候选人详情").classes(
-                    "text-subtitle2 text-grey-6 q-mt-md"
-                )
+        self._sync_boss_ui()
 
-                # 行点击 → 更新选中 + 显示详情弹窗
-                def on_row_clicked(e: Any) -> None:
-                    row_data = e.args.get("data")
-                    if not row_data:
-                        return
-                    candidate = table.mark_selected(row_data)
-                    name = row_data.get("name", "未知")
-                    score = row_data.get("score", "N/A")
-                    selected_label.text = f"已选择: {name} — {row_data.get('title', '')} ({score}分)"
+    # ═══════════════════════════════════════════════════════════
+    # BOSS 登录
+    # ═══════════════════════════════════════════════════════════
 
-                    if candidate:
-                        table.show_detail_dialog(candidate)
+    def _sync_boss_ui(self) -> None:
+        from cassiel.collector.boss_client import BossApiClient, COOKIES_FILE
 
-                table.grid.on("rowClicked", on_row_clicked)
+        if self._boss_logged_in and self._boss_client:
+            source_name = getattr(self, "_boss_source", "浏览器")
+            self._boss_status_icon.name = "check_circle"
+            self._boss_status_icon.classes("text-positive")
+            self._boss_status_label.set_text("✓ 已登录")
+            self._boss_status_label.classes("text-body2 text-positive")
+            self._boss_source_label.set_text(f"来源: {source_name}")
+            self._boss_extract_btn.set_visibility(False)
+            self._boss_refresh_btn.set_visibility(True)
+            self._boss_logout_btn.set_visibility(True)
+        elif COOKIES_FILE.exists():
+            self._boss_status_icon.name = "warning"
+            self._boss_status_icon.classes("text-orange")
+            self._boss_status_label.set_text("⚠ 请先登录")
+            self._boss_status_label.classes("text-body2 text-orange")
+            self._boss_source_label.set_text("")
+            self._boss_extract_btn.set_visibility(True)
+            self._boss_refresh_btn.set_visibility(False)
+            self._boss_logout_btn.set_visibility(False)
+        else:
+            self._boss_status_icon.name = "info"
+            self._boss_status_icon.classes("text-grey-6")
+            self._boss_status_label.set_text("请登录 BOSS 直聘后使用")
+            self._boss_status_label.classes("text-body2 text-grey-6")
+            self._boss_source_label.set_text("")
+            self._boss_extract_btn.set_visibility(True)
+            self._boss_refresh_btn.set_visibility(False)
+            self._boss_logout_btn.set_visibility(False)
 
-                with ui.row().classes("q-mt-md gap-2"):
-                    ui.button(
-                        "运行 AI 筛选",
-                        icon="psychology",
-                        on_click=lambda: self._run_evaluation(
-                            search_form, eval_model_select, table, stepper
-                        ),
-                    )
-                    ui.button("下一步：生成邀约", icon="arrow_forward", on_click=stepper.next)
-                    ui.button("上一步", icon="arrow_back", on_click=stepper.previous).props("flat")
+        self._sync_stepper_visibility()
 
-            # ── Step 4: 生成邀约 ──
-            with ui.step("生成邀约"):
-                ui.label("邀约文案预览").classes("text-h6")
+    def _sync_stepper_visibility(self) -> None:
+        if self._boss_logged_in:
+            self._stepper_container.set_visibility(True)
+        else:
+            self._stepper_container.set_visibility(False)
 
-                preview = InvitationPreviewComponent(
-                    candidates=self._candidates.candidates,
-                    content_map={},
-                    on_regenerate=lambda c: self._regenerate_single(
-                        c, search_form, write_model_select
-                    ),
-                    on_send=lambda c, t: self._handle_send(c, t),
-                    on_skip=lambda c: self._handle_skip(c),
-                )
+    async def _boss_extract_cookies(self) -> None:
+        from cassiel.collector.boss_client import BossApiClient
 
-                with ui.row().classes("q-mt-md gap-2"):
-                    ui.button(
-                        "生成全部邀约",
-                        icon="auto_awesome",
-                        on_click=lambda: self._generate_all_invitations(
-                            search_form, write_model_select, preview, stepper
-                        ),
-                    )
-                    ui.button("上一步", icon="arrow_back", on_click=stepper.previous).props("flat")
+        self._boss_status_label.set_text("⏳ 正在从浏览器提取...")
+        self._boss_status_label.classes("text-body2 text-orange")
+        self._boss_extract_btn.disable()
+
+        try:
+            def _extract() -> dict[str, str] | None:
+                return BossApiClient.extract_from_browser()
+
+            loop = asyncio.get_running_loop()
+            cookies = await loop.run_in_executor(None, _extract)
+
+            if cookies:
+                client = BossApiClient(cookies=cookies)
+                client.save_cookies()
+                self._boss_client = client
+                self._boss_logged_in = True
+                self._boss_source = "浏览器"
+                self._sync_boss_ui()
+                ui.notify(f"登录成功！已从浏览器提取 {len(cookies)} 个 Cookie", type="positive")
+            else:
+                self._sync_boss_ui()
+                ui.notify("未找到 BOSS 直聘 Cookie，请先用浏览器登录一次 boss.zhipin.com", type="warning")
+        except Exception as e:
+            self._sync_boss_ui()
+            ui.notify(f"提取失败: {e}", type="negative")
+        finally:
+            self._boss_extract_btn.enable()
+
+    def _boss_logout(self) -> None:
+        from cassiel.collector.boss_client import BossApiClient, COOKIES_FILE
+
+        if self._boss_client:
+            self._boss_client.close()
+        self._boss_client = None
+        self._boss_logged_in = False
+        try:
+            COOKIES_FILE.unlink(missing_ok=True)
+        except Exception:
+            pass
+        self._sync_boss_ui()
+        ui.notify("已退出 BOSS 直聘登录", type="info")
 
     # ═══════════════════════════════════════════════════════════
     # Step 1 回调
