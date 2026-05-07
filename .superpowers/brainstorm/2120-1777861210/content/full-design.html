@@ -1,0 +1,142 @@
+<h2>Cassiel Agent V1 设计方案</h2>
+<p class="subtitle">架构重构：单页 Stepper → 侧边栏多页面</p>
+
+<div class="section">
+<h3>整体结构</h3>
+
+<div class="mockup">
+  <div class="mockup-header">App 整体布局</div>
+  <div class="mockup-body" style="display:flex; min-height:500px;">
+    <!-- Sidebar -->
+    <div style="width:200px; min-height:100%; display:flex; flex-direction:column; background:#fff; border-right:1px solid #e0e0e0;">
+      <div style="padding:16px; border-bottom:1px solid #e0e0e0;">
+        <div style="font-weight:700; font-size:16px; color:#1565c0;">✦ Cassiel</div>
+        <div style="font-size:11px; color:#9e9e9e; margin-top:2px;">HRD 智能助手</div>
+      </div>
+      <div style="padding:8px 0; flex:1;">
+        <div style="padding:10px 16px; background:#e3f2fd; color:#1565c0; font-weight:600; font-size:14px; border-left:3px solid #1976d2;">
+          📋 招聘Agent
+        </div>
+        <div style="padding:10px 16px; color:#616161; font-size:14px;">
+          ⚙️ 账户配置
+        </div>
+      </div>
+      <div style="padding:12px 16px; border-top:1px solid #e0e0e0; font-size:11px; color:#bdbdbd;">
+        v0.1.0
+      </div>
+    </div>
+
+    <!-- Content Area: 招聘Agent -->
+    <div style="flex:1; padding:20px; background:#fafafa; overflow:auto;">
+      <div style="font-size:20px; font-weight:600; margin-bottom:16px; color:#212121;">📋 招聘Agent</div>
+
+      <!-- Model selector bar -->
+      <div style="display:flex; gap:12px; margin-bottom:16px; padding:10px 14px; background:#fff; border-radius:8px; border:1px solid #e0e0e0; align-items:center;">
+        <span style="font-size:12px; color:#757575; font-weight:600;">模型</span>
+        <div style="flex:1; display:flex; gap:8px;">
+          <div style="font-size:12px; padding:4px 10px; background:#e3f2fd; border-radius:4px; color:#1565c0;">🔍 GLM-4 Flash</div>
+          <div style="font-size:12px; padding:4px 10px; background:#fff3e0; border-radius:4px; color:#e65100;">📊 DeepSeek Chat</div>
+          <div style="font-size:12px; padding:4px 10px; background:#e8f5e9; border-radius:4px; color:#2e7d32;">✍️ Qwen Plus</div>
+        </div>
+      </div>
+
+      <!-- Operation log -->
+      <div style="margin-bottom:16px; padding:10px; background:#263238; border-radius:6px; height:80px; overflow:hidden;">
+        <div style="font-size:11px; color:#80cbc4; font-family:monospace;">[系统] 就绪，等待操作...</div>
+      </div>
+
+      <!-- 4-step Stepper -->
+      <div style="background:#fff; border-radius:8px; border:1px solid #e0e0e0; padding:20px;">
+        <div style="display:flex; gap:4px; margin-bottom:20px;">
+          <div style="padding:8px 20px; background:#1976d2; color:#fff; border-radius:6px; font-size:13px; font-weight:500;">① 设置条件</div>
+          <div style="padding:8px 20px; background:#e0e0e0; color:#757575; border-radius:6px; font-size:13px;">② 自动搜索</div>
+          <div style="padding:8px 20px; background:#e0e0e0; color:#757575; border-radius:6px; font-size:13px;">③ AI筛选</div>
+          <div style="padding:8px 20px; background:#e0e0e0; color:#757575; border-radius:6px; font-size:13px;">④ 生成邀约</div>
+        </div>
+        <div class="placeholder" style="height:180px;">
+          搜索表单：关键词 / 城市 / 薪资 / 经验 / 学历
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:28px;">
+<h3>账户配置页</h3>
+
+<div class="mockup">
+  <div class="mockup-header">⚙️ 账户配置</div>
+  <div class="mockup-body" style="min-height:500px; background:#fafafa; overflow:auto;">
+    <div style="font-size:20px; font-weight:600; margin-bottom:20px; color:#212121;">⚙️ 账户配置</div>
+
+    <!-- 大模型 API Keys -->
+    <div style="background:#fff; border-radius:8px; border:1px solid #e0e0e0; padding:16px; margin-bottom:16px;">
+      <div style="font-size:15px; font-weight:600; margin-bottom:12px; color:#1565c0;">🤖 大模型 API</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px; width:100px; color:#616161;">智谱 GLM</span>
+          <div style="flex:1; padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; color:#9e9e9e;">sk-xxxxxxxxxxxx</div>
+          <div style="padding:4px 10px; background:#e8f5e9; border-radius:4px; font-size:11px; color:#2e7d32;">✓ 已连接</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px; width:100px; color:#616161;">通义 Qwen</span>
+          <div style="flex:1; padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; color:#9e9e9e;">sk-xxxxxxxxxxxx</div>
+          <div style="padding:4px 10px; background:#e8f5e9; border-radius:4px; font-size:11px; color:#2e7d32;">✓ 已连接</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px; width:100px; color:#616161;">DeepSeek</span>
+          <div style="flex:1; padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; color:#9e9e9e;">sk-xxxxxxxxxxxx</div>
+          <div style="padding:4px 10px; background:#e8f5e9; border-radius:4px; font-size:11px; color:#2e7d32;">✓ 已连接</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 外部网站凭据 -->
+    <div style="background:#fff; border-radius:8px; border:1px solid #e0e0e0; padding:16px; margin-bottom:16px;">
+      <div style="font-size:15px; font-weight:600; margin-bottom:12px; color:#1565c0;">🌐 外部网站凭据</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:13px; width:100px; color:#616161;">BOSS 直聘</span>
+          <div style="flex:1; padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; color:#9e9e9e;">Cookie 登录</div>
+          <div style="padding:4px 10px; background:#fff3e0; border-radius:4px; font-size:11px; color:#e65100;">⚠ 未登录</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; opacity:0.5;">
+          <span style="font-size:13px; width:100px; color:#9e9e9e;">LinkedIn</span>
+          <div style="flex:1; padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; color:#bdbdbd;">即将支持</div>
+          <div style="padding:4px 10px; background:#f5f5f5; border-radius:4px; font-size:11px; color:#bdbdbd;">待开通</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 搜索默认值 -->
+    <div style="background:#fff; border-radius:8px; border:1px solid #e0e0e0; padding:16px;">
+      <div style="font-size:15px; font-weight:600; margin-bottom:12px; color:#1565c0;">🔍 搜索默认值</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px;">
+          <span style="color:#757575;">城市：</span><span>深圳</span>
+        </div>
+        <div style="padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px;">
+          <span style="color:#757575;">薪资：</span><span>15K-30K</span>
+        </div>
+        <div style="padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px;">
+          <span style="color:#757575;">经验：</span><span>3-5年</span>
+        </div>
+        <div style="padding:6px 10px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:12px;">
+          <span style="color:#757575;">学历：</span><span>本科</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:28px;">
+<h3>代码重构要点</h3>
+<div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; font-size:13px; line-height:1.8; color:#424242;">
+  <div><strong>1. main.py 拆分：</strong><code>CassielApp</code> → <code>AppShell</code>（侧边栏+路由）+ <code>RecruitPage</code>（招聘）+ <code>SettingsPage</code>（配置）</div>
+  <div><strong>2. NiceGUI 路由：</strong>用 <code>ui.left_drawer</code> 做侧边栏 + <code>ui.tab_panels</code> 做页面切换（原生模式兼容）</div>
+  <div><strong>3. 现有组件复用：</strong><code>SearchFormComponent</code>、<code>CandidateTableComponent</code>、<code>InvitationPreviewComponent</code> 不变</div>
+  <div><strong>4. 配置持久化：</strong>现有 <code>config.json</code> 扩展字段，新增 <code>credentials</code> 存储外部网站凭据</div>
+</div>
+</div>

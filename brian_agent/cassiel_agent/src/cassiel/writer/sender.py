@@ -22,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
-from cassiel.collector.boss import BASE_URL
+from cassiel.collector.boss_client import BASE_URL
 from cassiel.models.candidate import Candidate
 from cassiel.session.store import SessionStore
 

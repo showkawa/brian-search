@@ -1,0 +1,124 @@
+<h2>Cassiel Agent V1 布局方案</h2>
+<p class="subtitle">左侧菜单 + 两个页面（招聘Agent / 账户配置）</p>
+
+<div class="split">
+  <!-- 方案 A -->
+  <div class="mockup">
+    <div class="mockup-header">方案 A：固定侧边栏</div>
+    <div class="mockup-body" style="display:flex; min-height:420px;">
+      <div class="mock-sidebar" style="width:200px; min-height:100%; display:flex; flex-direction:column; padding:0;">
+        <div style="padding:16px; border-bottom:1px solid #e0e0e0; font-weight:700; font-size:15px; color:#1976d2;">
+          ✦ Cassiel
+        </div>
+        <div style="padding:8px 0; flex:1;">
+          <div style="padding:10px 16px; background:#e3f2fd; color:#1565c0; font-weight:600; font-size:14px; border-left:3px solid #1976d2;">
+            📋 招聘Agent
+          </div>
+          <div style="padding:10px 16px; color:#616161; font-size:14px; cursor:pointer;">
+            ⚙️ 账户配置
+          </div>
+        </div>
+        <div style="padding:12px 16px; border-top:1px solid #e0e0e0; font-size:12px; color:#9e9e9e;">
+          v0.1.0
+        </div>
+      </div>
+      <div class="mock-content" style="flex:1; padding:20px; background:#fafafa;">
+        <div style="font-size:18px; font-weight:600; margin-bottom:16px;">📋 招聘Agent</div>
+        <div style="display:flex; gap:8px; margin-bottom:12px; padding:8px; background:#fff; border-radius:6px; border:1px solid #e0e0e0;">
+          <span style="font-size:12px; color:#757575;">模型:</span>
+          <span style="font-size:12px; padding:2px 8px; background:#e3f2fd; border-radius:4px;">GLM-4 Flash</span>
+          <span style="font-size:12px; padding:2px 8px; background:#fff3e0; border-radius:4px;">DeepSeek Chat</span>
+          <span style="font-size:12px; padding:2px 8px; background:#e8f5e9; border-radius:4px;">Qwen Plus</span>
+        </div>
+        <div style="background:#fff; border-radius:6px; border:1px solid #e0e0e0; padding:16px;">
+          <div style="display:flex; gap:4px; margin-bottom:16px;">
+            <div style="padding:6px 16px; background:#1976d2; color:#fff; border-radius:4px; font-size:13px;">① 设置条件</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">② 自动搜索</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">③ AI筛选</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">④ 生成邀约</div>
+          </div>
+          <div class="placeholder" style="height:200px;">搜索表单区域...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 方案 B -->
+  <div class="mockup">
+    <div class="mockup-header">方案 B：可折叠侧边栏</div>
+    <div class="mockup-body" style="display:flex; min-height:420px;">
+      <div class="mock-sidebar" style="width:56px; min-height:100%; display:flex; flex-direction:column; align-items:center; padding:0;">
+        <div style="padding:12px 0; border-bottom:1px solid #e0e0e0; font-weight:700; font-size:18px; color:#1976d2; width:100%; text-align:center;">
+          ✦
+        </div>
+        <div style="padding:8px 0; flex:1; width:100%;">
+          <div style="padding:10px 0; text-align:center; background:#e3f2fd; color:#1565c0; font-size:20px; border-left:3px solid #1976d2;" title="招聘Agent">
+            📋
+          </div>
+          <div style="padding:10px 0; text-align:center; color:#616161; font-size:20px;" title="账户配置">
+            ⚙️
+          </div>
+        </div>
+        <div style="padding:8px 0; border-top:1px solid #e0e0e0; font-size:10px; color:#9e9e9e;">
+          v0.1
+        </div>
+      </div>
+      <div class="mock-content" style="flex:1; padding:20px; background:#fafafa;">
+        <div style="font-size:18px; font-weight:600; margin-bottom:16px;">📋 招聘Agent</div>
+        <div style="display:flex; gap:8px; margin-bottom:12px; padding:8px; background:#fff; border-radius:6px; border:1px solid #e0e0e0;">
+          <span style="font-size:12px; color:#757575;">模型:</span>
+          <span style="font-size:12px; padding:2px 8px; background:#e3f2fd; border-radius:4px;">GLM-4 Flash</span>
+          <span style="font-size:12px; padding:2px 8px; background:#fff3e0; border-radius:4px;">DeepSeek Chat</span>
+          <span style="font-size:12px; padding:2px 8px; background:#e8f5e9; border-radius:4px;">Qwen Plus</span>
+        </div>
+        <div style="background:#fff; border-radius:6px; border:1px solid #e0e0e0; padding:16px;">
+          <div style="display:flex; gap:4px; margin-bottom:16px;">
+            <div style="padding:6px 16px; background:#1976d2; color:#fff; border-radius:4px; font-size:13px;">① 设置条件</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">② 自动搜索</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">③ AI筛选</div>
+            <div style="padding:6px 16px; background:#e0e0e0; color:#757575; border-radius:4px; font-size:13px;">④ 生成邀约</div>
+          </div>
+          <div class="placeholder" style="height:200px;">搜索表单区域...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>方案 A 优势</h4>
+      <ul>
+        <li>菜单文字清晰，一眼识别</li>
+        <li>为未来更多菜单项预留空间</li>
+        <li>NiceGUI <code>ui.left_drawer</code> 原生支持</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>方案 A 劣势</h4>
+      <ul>
+        <li>侧边栏占 200px，内容区稍窄</li>
+        <li>桌面小窗口时空间紧张</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pros-cons" style="margin-top:12px;">
+    <div class="pros">
+      <h4>方案 B 优势</h4>
+      <ul>
+        <li>内容区最大化（56px 侧边栏）</li>
+        <li>视觉简洁，类似 VS Code</li>
+        <li>小窗口友好</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>方案 B 劣势</h4>
+      <ul>
+        <li>只有图标，需 hover 才能看到菜单名</li>
+        <li>V1 只有 2 个菜单，图标模式优势不大</li>
+        <li>NiceGUI 需要手动实现折叠逻辑</li>
+      </ul>
+    </div>
+  </div>
+</div>

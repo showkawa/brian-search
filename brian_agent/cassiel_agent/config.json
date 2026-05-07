@@ -26,10 +26,9 @@
     "search_provider": "glm",
     "search_model": "glm-4-flash",
     "evaluate_provider": "deepseek",
-    "evaluate_model": "deepseek-chat",
+    "evaluate_model": "deepseek-v4-flash",
     "write_provider": "qwen",
-    "write_model": "qwen-plus",
-    "deepseek_model": "deepseek-chat"
+    "write_model": "qwen-plus"
   },
   "api_keys": {
     "glm_key": "",
@@ -53,12 +52,15 @@
     }
   },
   "enabled_models": {
-    "deepseek": ["deepseek-chat", "deepseek-coder"],
+    "deepseek": [
+      "deepseek-v4-flash",
+      "deepseek-v4-pro"
+    ],
     "glm": [],
     "qwen": []
   },
   "model_refreshed_at": {
-    "deepseek": "",
+    "deepseek": "2026-05-05 20:43",
     "glm": "",
     "qwen": ""
   }

@@ -29,7 +29,8 @@ from enum import Enum, auto
 from typing import Any, Callable, Generic, TypeVar
 
 from cassiel.agent.roles import EVALUATOR_ROLE, SEARCHER_ROLE, WRITER_ROLE, AgentRole
-from cassiel.collector.boss import BossCollector
+from cassiel.collector.boss_client import BossApiClient
+BossCollector = BossApiClient  # backward compat
 from cassiel.config.settings import AppConfig, SearchConfig
 from cassiel.evaluator.filter import CandidateFilter
 from cassiel.llm.providers import LLMProvider, create_provider

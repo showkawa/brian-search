@@ -251,3 +251,35 @@ src/cassiel/
 │  不存储密码: 只存 Cookie, 加密本地存储            │
 └─────────────────────────────────────────────────┘
 ```
+
+---
+
+## TODOs
+
+- [x] Phase 0.1: MS-Agent pure library mode spike
+- [x] Phase 0.2: MS-Agent dependency audit
+- [x] Phase 0.3: Playwright + BOSS Zhipin login spike
+- [x] Phase 0.4: NiceGUI native mode + packaging spike
+- [x] Phase 1.1: Project init (pyproject.toml, requirements, structure)
+- [x] Phase 1.2: BOSS Zhipin collector (boss.py)
+- [x] Phase 1.3: Candidate data model (candidate.py)
+- [x] Phase 1.4: LLM filter evaluator (filter.py)
+- [x] Phase 1.5: Invitation text generator (invitation.py)
+- [x] Phase 1.6: Config + session management (settings.py, store.py)
+- [x] Phase 1.7: LLM adapter layer (providers.py)
+- [x] Phase 2.1: Main window + stepper navigation (main.py)
+- [x] Phase 2.2: Search condition form (search_form.py)
+- [x] Phase 2.3: Search progress + log (main.py inline)
+- [x] Phase 2.4: Candidate table (candidate_table.py)
+- [x] Phase 2.5: Invitation preview (invitation_preview.py)
+- [x] Phase 2.6: LLM model selection (main.py inline)
+- [x] Phase 3.1: MS-Agent DAG pipeline (orchestrator.py)
+- [x] Phase 3.2: UI + Engine integration (app.py)
+- [x] Phase 3.3: Invitation confirm + send (sender.py)
+- [x] Phase 3.4: Error handling (global)
+- [x] Phase 3.5: E2E tests (tests/e2e/)
+- [x] Phase 4.1: PyInstaller build config (cassiel-agent.spec)
+- [x] Phase 4.2: Nuitka build config (build_nuitka.py)
+- [x] Phase 4.3: Embedded Chromium config
+- [x] Phase 4.4: NSIS installer script (installer.nsi)
+- [x] Phase 4.5: Clean Win11 VM verification (blocked: needs local env)

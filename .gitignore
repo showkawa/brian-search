@@ -11,3 +11,5 @@ temp.py
 brian_js/electron_teams/nul
 brian_js/**/out/*
 .windsurf/*
+.sisyphus/*
+*/__pycache__/*

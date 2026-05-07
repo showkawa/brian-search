@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-
 from nicegui import ui
 
 from cassiel.config.settings import AppConfig, SearchConfig, CredentialEntry
