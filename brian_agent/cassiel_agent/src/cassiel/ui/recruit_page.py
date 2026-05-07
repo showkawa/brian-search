@@ -294,9 +294,6 @@ class RecruitPage:
                         ui.button('上一步', icon='arrow_back', on_click=stepper.previous).props('flat')
 
         self._sync_boss_ui()
-        self._sync_stepper_visibility()
-
-        self._sync_boss_ui()
 
     # ═══════════════════════════════════════════════════════════
     # BOSS 登录
@@ -345,7 +342,7 @@ class RecruitPage:
     async def _boss_extract_cookies(self) -> None:
         from cassiel.collector.boss_client import BossApiClient
 
-        self._boss_status_label.set_text("⏳ 正在从浏览器提取...")
+        self._boss_status_label.set_text("⏳ 正在从 Chrome/Edge 提取...")
         self._boss_status_label.classes("text-body2 text-orange")
         self._boss_extract_btn.disable()
 
@@ -363,13 +360,20 @@ class RecruitPage:
                 self._boss_logged_in = True
                 self._boss_source = "浏览器"
                 self._sync_boss_ui()
-                ui.notify(f"登录成功！已从浏览器提取 {len(cookies)} 个 Cookie", type="positive")
+                ui.notify(f"登录成功！已提取 {len(cookies)} 个 Cookie", type="positive")
             else:
                 self._sync_boss_ui()
-                ui.notify("未找到 BOSS 直聘 Cookie，请先用浏览器登录一次 boss.zhipin.com", type="warning")
+                ui.notify("未找到 BOSS 直聘 Cookie\n\n请确认:\n1. 已在 Chrome/Edge 中登录过 boss.zhipin.com\n2. 关闭浏览器后重试（浏览器运行时可能锁库）", type="warning", timeout=10000)
         except Exception as e:
             self._sync_boss_ui()
-            ui.notify(f"提取失败: {e}", type="negative")
+            err = str(e)
+            if "lock" in err.lower() or "database" in err.lower():
+                msg = "Cookie 数据库被锁定\n请关闭所有 Chrome/Edge 窗口后重试"
+            elif "permission" in err.lower() or "access" in err.lower():
+                msg = f"无法访问浏览器 Cookie\n{err}"
+            else:
+                msg = f"提取失败: {err}"
+            ui.notify(msg, type="negative", timeout=10000)
         finally:
             self._boss_extract_btn.enable()
 
