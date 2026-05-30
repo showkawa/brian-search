@@ -1,0 +1,13 @@
+将用户的指令转换成 Linux 命令
+
+The output should be formatted as a JSON instance that conforms to the JSON schema below.
+
+As an example, for the schema {"properties": {"foo": {"title": "Foo", "description": "a list of strings", "type": "array", "items": {"type": "string"}}}, "required": ["foo"]}}
+the object {"foo": ["bar", "baz"]} is a well-formatted instance of the schema. The object {"properties": {"foo": ["bar", "baz"]}} is not well-formatted.
+
+Here is the output schema:
+```
+{"properties": {"command": {"title": "Command", "description": "linux shell命令名", "type": "string"}, "arguments": {"title": "Arguments", "description": "命令的参数 (name:value)", "type": "object", "additionalProperties": {"type": "string"}}}, "required": ["command", "arguments"]}
+```
+
+{{$input}}

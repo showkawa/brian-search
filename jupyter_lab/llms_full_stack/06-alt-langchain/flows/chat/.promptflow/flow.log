@@ -1,0 +1,7 @@
+2023-10-09 20:21:09 +0800   81179 execution          INFO     Start to run 2 nodes with concurrency level 16.
+2023-10-09 20:21:09 +0800   81179 execution.flow     INFO     Executing node chat. node run id: 10877079-a9c7-4a10-8747-a0a4e6804c4e_chat_0
+2023-10-09 20:21:18 +0800   81179 execution.flow     INFO     Node chat completes.
+2023-10-09 20:21:18 +0800   81179 execution.flow     INFO     Executing node summarize. node run id: 10877079-a9c7-4a10-8747-a0a4e6804c4e_summarize_0
+2023-10-09 20:21:19 +0800   81179 execution.flow     WARNING  Failed to calculate metrics due to exception: Cannot calculate metrics for none or empty api_type..
+2023-10-09 20:21:19 +0800   81179 execution.flow     WARNING  Output of summarize is not json serializable, use str to store it.
+2023-10-09 20:21:19 +0800   81179 execution.flow     INFO     Node summarize completes.

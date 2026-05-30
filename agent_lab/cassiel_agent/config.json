@@ -1,0 +1,67 @@
+{
+  "search": {
+    "keyword": "Python开发",
+    "city": "北京",
+    "city_code": "100010000",
+    "salary_min": 0,
+    "salary_max": 0,
+    "experience": "不限",
+    "education": "不限",
+    "max_pages": 3,
+    "page_delay": 3.0,
+    "CITY_CODES": {
+      "北京": "100010000",
+      "上海": "101020100",
+      "深圳": "101280600",
+      "杭州": "101210100",
+      "广州": "101280100",
+      "成都": "101270100",
+      "南京": "101190100",
+      "武汉": "101200100",
+      "西安": "101110100",
+      "重庆": "101040100"
+    }
+  },
+  "model": {
+    "search_provider": "glm",
+    "search_model": "glm-4-flash",
+    "evaluate_provider": "deepseek",
+    "evaluate_model": "deepseek-v4-flash",
+    "write_provider": "qwen",
+    "write_model": "qwen-plus"
+  },
+  "api_keys": {
+    "glm_key": "",
+    "qwen_key": "",
+    "deepseek_key": "sk-ab5d51f00c0943cfb51e2975df54e223"
+  },
+  "credentials": {
+    "boss_zhipin": {
+      "type": "cookie",
+      "status": "unset",
+      "cookie_file": "cookies.json",
+      "token_value": "",
+      "last_verified": ""
+    },
+    "linkedin": {
+      "type": "token",
+      "status": "coming_soon",
+      "cookie_file": "",
+      "token_value": "",
+      "last_verified": ""
+    }
+  },
+  "enabled_models": {
+    "deepseek": [
+      "deepseek-v4-flash",
+      "deepseek-v4-pro"
+    ],
+    "glm": [],
+    "qwen": []
+  },
+  "model_refreshed_at": {
+    "deepseek": "2026-05-05 20:43",
+    "glm": "",
+    "qwen": ""
+  }
+}
