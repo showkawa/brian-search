@@ -2,6 +2,7 @@
 .env
 .windsurf/*
 .sisyphus/*
+.omo/*
 **/output/*
 **/__pycache__/*
 */node_modules/*
