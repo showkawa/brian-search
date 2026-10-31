@@ -11,15 +11,13 @@ import json
 import logging
 import random
 import time
-from pathlib import Path
 from typing import Any
 
 import httpx
 
-logger = logging.getLogger(__name__)
+from cassiel.paths import COOKIES_FILE
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
-COOKIES_FILE = BASE_DIR / "brian_agent" / "cassiel_agent" / "cookies.json"
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.zhipin.com"
 BOSS_SEARCH_URL = "/wapi/zpitem/web/boss/search/geek/info"

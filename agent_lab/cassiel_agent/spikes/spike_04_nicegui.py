@@ -9,7 +9,7 @@
 - ui.log: 操作日志
 - ui.notify: 提示通知
 
-运行: python brian_agent/cassiel_agent/spikes/spike_04_nicegui.py
+运行: python agent_lab/cassiel_agent/spikes/spike_04_nicegui.py
 """
 
 import asyncio

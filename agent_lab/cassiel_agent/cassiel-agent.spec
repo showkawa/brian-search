@@ -50,6 +50,7 @@ a = Analysis(
         "httpcore",
         # Cassiel subpackages
         "cassiel",
+        "cassiel.paths",
         "cassiel.ui",
         "cassiel.ui.main",
         "cassiel.ui.search_form",
@@ -59,7 +60,7 @@ a = Analysis(
         "cassiel.agent.orchestrator",
         "cassiel.agent.roles",
         "cassiel.collector",
-        "cassiel.collector.boss",
+        "cassiel.collector.boss_client",
         "cassiel.evaluator",
         "cassiel.evaluator.filter",
         "cassiel.writer",

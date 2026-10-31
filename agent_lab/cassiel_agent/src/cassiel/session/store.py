@@ -16,12 +16,12 @@ from pathlib import Path
 from typing import Any
 
 from cassiel.models.candidate import Candidate, CandidateList
+from cassiel.paths import DB_FILE
 
 logger = logging.getLogger(__name__)
 
 # ── 默认数据库路径 ──────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
-DEFAULT_DB_PATH = BASE_DIR / "brian_agent" / "cassiel_agent" / "data" / "cassiel.db"
+DEFAULT_DB_PATH = DB_FILE
 
 
 class SessionStore:

@@ -1,8 +1,14 @@
 .venv/*
 .env
-.windsurf/*
-.sisyphus/*
-.omo/*
 **/output/*
 **/__pycache__/*
 */node_modules/*
+**/.pytest_cache/*
+**/*.egg-info/
+
+# 运行期数据 / 构建产物
+agent_lab/cassiel_agent/cookies.json
+agent_lab/cassiel_agent/data/
+agent_lab/cassiel_agent/dist/
+agent_lab/cassiel_agent/*.build/
+agent_lab/cassiel_agent/*.dist/

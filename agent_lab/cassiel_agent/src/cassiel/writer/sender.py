@@ -24,6 +24,7 @@ from typing import Any, Callable
 
 from cassiel.collector.boss_client import BASE_URL
 from cassiel.models.candidate import Candidate
+from cassiel.paths import COOKIES_FILE
 from cassiel.session.store import SessionStore
 
 logger = logging.getLogger(__name__)
@@ -127,12 +128,7 @@ class InvitationSender:
         self._browser = None
         self._context: BrowserContext | None = browser_context
         self._page = None
-        self._cookies_path = (
-            Path(cookies_path)
-            if cookies_path
-            else Path(__file__).resolve().parent.parent.parent.parent.parent
-            / "brian_agent" / "cassiel_agent" / "cookies.json"
-        )
+        self._cookies_path = Path(cookies_path) if cookies_path else COOKIES_FILE
         self.on_log = on_log or (lambda msg: logger.info(msg))
         self.on_sent = on_sent or (lambda c, t: None)
 

@@ -4,8 +4,8 @@ Phase 0.3 validation script for Cassiel Agent project.
 
 Usage:
     pip install playwright && playwright install chromium
-    python brian_agent/cassiel_agent/spikes/spike_03_boss.py
-    python brian_agent/cassiel_agent/spikes/spike_03_boss.py --keyword "Python开发"
+    python agent_lab/cassiel_agent/spikes/spike_03_boss.py
+    python agent_lab/cassiel_agent/spikes/spike_03_boss.py --keyword "Python开发"
 """
 
 import json
@@ -16,9 +16,9 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 # ── Paths ──────────────────────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent  # project root
-COOKIES_FILE = BASE_DIR / "brian_agent" / "cassiel_agent" / "cookies.json"
-DATA_DIR = BASE_DIR / "data"
+PROJECT_DIR = Path(__file__).resolve().parent.parent  # cassiel_agent/
+COOKIES_FILE = PROJECT_DIR / "cookies.json"
+DATA_DIR = PROJECT_DIR / "data"
 OUTPUT_FILE = DATA_DIR / "candidates.json"
 
 # ── Config ─────────────────────────────────────────────────────────────
