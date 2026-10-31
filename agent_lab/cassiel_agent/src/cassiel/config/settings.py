@@ -14,11 +14,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from cassiel.paths import CONFIG_FILE
+
 logger = logging.getLogger(__name__)
 
 # ── 默认配置路径 ──────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent  # 项目根目录 (brain-search)
-DEFAULT_CONFIG_PATH = BASE_DIR / "brian_agent" / "cassiel_agent" / "config.json"
+DEFAULT_CONFIG_PATH = CONFIG_FILE
 
 
 # ── 数据类 ──────────────────────────────────────────────
